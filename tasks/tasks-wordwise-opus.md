@@ -4,7 +4,7 @@
 
 ### Docker & Configuration
 - `docker-compose.yml` - Docker orchestration for development environment with frontend and postgres services
-- `frontend/Dockerfile.dev` - Frontend container configuration
+- `frontend/Dockerfile.dev` - Frontend container configuration for Node.js development
 - `.env.example` - Environment variable template
 - `.env` - Local environment configuration (created from .env.example)
 
@@ -54,7 +54,7 @@
 - [ ] 1.0 Docker Development Environment Setup
   - [x] 1.1 Create project directory structure
   - [x] 1.2 Create docker-compose.yml with frontend and postgres services
-  - [ ] 1.3 Create frontend/Dockerfile.dev for Node.js development
+  - [x] 1.3 Create frontend/Dockerfile.dev for Node.js development
   - [ ] 1.4 Create .env.example with placeholder values
   - [ ] 1.5 Test Docker environment startup
 
