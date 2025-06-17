@@ -5,7 +5,7 @@
 ### Docker & Configuration
 - `docker-compose.yml` - Docker orchestration for development environment with frontend and postgres services
 - `frontend/Dockerfile.dev` - Frontend container configuration for Node.js development
-- `.env.example` - Environment variable template
+- `.env.example` - Environment variable template with Supabase placeholders
 - `.env` - Local environment configuration (created from .env.example)
 
 ### Frontend Core
@@ -55,7 +55,7 @@
   - [x] 1.1 Create project directory structure
   - [x] 1.2 Create docker-compose.yml with frontend and postgres services
   - [x] 1.3 Create frontend/Dockerfile.dev for Node.js development
-  - [ ] 1.4 Create .env.example with placeholder values
+  - [x] 1.4 Create .env.example with placeholder values
   - [ ] 1.5 Test Docker environment startup
 
 - [ ] 2.0 Initialize Frontend React Application
