@@ -1,0 +1,183 @@
+You are an expert full-stack software architect, technical project manager, and AI engineer.
+
+Your task: **Given the Product Requirements Document (PRD) AND the answers to all clarifying questions provided below, produce a complete, actionable MVP-development plan that a junior developer—or an implementation-focused AI—can follow from zero to a working demo.**
+
+--------------------------------------------------------------------
+Inputs (inserted verbatim below this line)
+--------------------------------------------------------------------
+1. PRD
+# Product Requirements Document – WordWise AI (Marketing Manager Edition)
+
+## 1-Sentence Product Summary
+An AI-powered writing assistant that helps marketing managers craft high-converting, on-brand campaign copy in real time.
+
+## 1. Goals & Non-Goals
+### Goals
+1. Deliver instant grammar, spelling, and style suggestions while the user types.
+2. Provide brand-tone alignment and persuasive copy improvements tailored to marketing goals.
+3. Offer analytics on suggestion adoption and copy performance to educate the marketer over time.
+4. Support secure multi-device access to documents with realtime collaboration.
+
+### Non-Goals
+• Full Grammarly feature parity (e.g., plagiarism detection) in phase 1.  
+• Deep collaboration features like Google Docs style commenting.  
+• Offline-first mobile app (web-only MVP).
+
+## 2. Target Audience
+Primary persona: **Marketing Manager – B2B SaaS** (age 25-45) crafting website, email, and social campaign copy.  Writes 2-5 hours daily, values brand consistency and conversion metrics.
+
+## 3. User Stories (MVP)
+1. Tone Adjustment – "As a marketer, I want tone adjustments to match my brand voice across all content."
+2. Persuasive Language – "As a marketer, I want persuasive language suggestions to improve conversion rates."
+3. Conciseness – "As a marketer, I want conciseness improvements to create more impactful messaging."
+4. Headline Optimization – "As a marketer, I want headline/title optimization suggestions to maximize engagement."
+5. Readability Guidance – "As a marketer, I want real-time readability scores so my copy is clear to my target audience."
+6. Vocabulary Variation – "As a marketer, I want vocabulary variation suggestions to avoid repetitive wording."
+7. A/B Phrase Alternatives – "As a marketer, I want AI-generated A/B phrasing alternatives for key CTAs."
+
+## 4. Success Metrics
+• ≥ 85 % grammar-correction accuracy.  
+• ≤ 1.5 s median latency for suggestions.  
+• ≥ 80 % of AI suggestions accepted or modified (indicates relevance).  
+• ≥ 10 % lift in click-through rate on copy using A/B suggestions (measured via marketer feedback surveys).
+
+## 5. Functional Requirements
+FR-1 Document Editor with rich-text input, highlighting, and inline suggestion cards.  
+FR-2 Authentication (Supabase Auth).  
+FR-3 Realtime grammar/style analysis via Edge Function calling OpenAI GPT-4o.  
+FR-4 Brand-voice settings screen (tone, reading level, banned words list).  
+FR-5 Analytics dashboard showing suggestion acceptance % and readability trend.  
+FR-6 Storage of documents, suggestions, and user prefs in Postgres.  
+FR-7 Export/share as Markdown or HTML.
+FR-DEV_ONLY_1 test user button on login page for testing (to minimize developer keystrokes while testing)
+
+## 6. Non-Functional Requirements
+NFR-1 99.5 % uptime.  
+
+
+## 7. Technical Architecture
+Frontend: React 18 + TypeScript, Vite, Tailwind, Zustand.  
+Backend: Supabase (Postgres, Realtime), Edge Functions (Deno) for OpenAI calls.  
+AI: OpenAI GPT-4o; future pgvector embeddings for semantic search.  
+Hosting: Vercel (frontend) + Supabase (backend).  
+
+## 8. Data Model
+• users(id, email, brand_tone,…).  
+• documents(id, user_id, title, content, created_at).  
+• suggestions(id, doc_id, start_idx, end_idx, type, original_text, suggestion_text, explanation, confidence).  
+• analytics(id, user_id, metric, value, ts).
+
+## 9. Timeline (7-day hack)
+Day 1 Scaffold repo, auth, editor skeleton.  
+Day 2 Store/fetch documents, basic save.  
+Day 3 Grammar & spelling Edge Function.  
+Day 4 Tone + persuasiveness models; inline UI.  
+Day 5 Headline & readability features; dashboard.  
+Day 6 A/B suggestion generator; polish.  
+Day 7 Testing, deploy, record demo video.
+
+## 10. Risks & Mitigations
+• OpenAI latency spikes → cache recent prompts; show "loading" skeleton UI.  
+
+
+2. Clarification Answers
+Business
+1. Should the MVP support multiple brand-voice profiles per user or a single global profile?
+-One to start. 
+2. What specific tone/style guidelines (e.g., formal, friendly, industry jargon) define "on-brand" for initial evaluation?
+-Default to friendly. Though that could change based on Brand Identity.
+
+UX
+3. Should inline suggestion cards appear automatically as the user types or only when a highlighted segment is clicked?
+-Only when a highlighted segment is clicked 
+4. Must the editor support importing existing files (e.g., .docx, .md) for editing in the MVP?
+-The editor should support a uploading a text file or creating a new document
+5. Which export formats are required beyond Markdown and HTML (if any)?
+-Text
+
+Technical
+6. Will the MVP handle only English text, or must it support additional languages?
+-English only. 
+7. What is the maximum expected document size (characters/words) the system must handle without performance degradation?
+-2000 words 
+8. Are team or shared workspaces required, or is the MVP single-user per document?
+-Single user per document. 
+9. Which authentication methods should be enabled at launch (email/password, magic link, social OAuth providers)?
+- Supabase built-in authentication. 
+10. What per-user rate limit (calls/min) should be enforced on OpenAI Edge Function requests?
+-None for now. 
+11. Is version history or document rollback required for the MVP?
+-No. 
+Analytics & Metrics
+12. How will a user's acceptance of a suggestion be detected—explicit "accept" clicks, manual edits matching the suggestion, or both?
+- Except clicks
+13. At what interval should analytics data refresh in the dashboard (real-time streaming vs. periodic batch)?
+- Periodic Batch 
+14. What sample size or timeframe is necessary to judge the ≥ 10 % CTR lift metric as statistically significant?
+- Ignore that one for now. 
+
+Timeline & Process
+15. Are formal code reviews or QA gates expected during the 7-day hack that could impact the stated daily milestones?
+- Code should be largely done on Friday, day 5.
+
+--------------------------------------------------------------------
+
+When building the plan, **strictly cover each numbered section**:
+
+1. **Executive Summary**
+   • One concise paragraph restating the product vision and MVP goal.
+
+2. **Technical Architecture Overview**
+   • Diagram or descriptive outline of frontend, backend, AI/ML components, data stores, third-party services, and hosting.
+   • Justify tech-stack choices (libraries, frameworks, cloud services).
+
+3. **Data Model & Schemas**
+   • List every major entity, attributes, relationships, and indexes.
+   • Provide SQL (for relational) or JSON examples (for NoSQL) where helpful.
+
+4. **API & Integration Contracts**
+   • Table of all REST/GraphQL/WebSocket endpoints (method, path, request, response, auth).
+   • Include AI-service interaction flows (prompt formats, expected outputs).
+
+5. **Epic & Milestone Breakdown (Roadmap)**
+   • Split work into 2-week (or appropriate) iterations mapped to the PRD’s timeline.
+   • For each milestone list:
+     – Goals & deliverables
+     – User stories with acceptance criteria
+     – Key technical tasks
+     – Estimated story points or effort (S, M, L)
+     – Prerequisites / dependencies
+
+6. **Detailed Task Board (Backlog Grooming)**
+   • Convert user stories into atomic developer tasks ready for a Kanban board.
+   • Each task: description, definition of done, estimated effort.
+
+7. **AI/ML Component Specification** (if applicable)
+   • Model selection or API used, training or fine-tuning needs, prompt engineering, evaluation metrics, latency/throughput expectations.
+
+8. **Testing Strategy**
+   • Unit, integration, end-to-end, and load-testing plans.
+   • Tool recommendations and code-coverage targets.
+
+9. **DevOps & Deployment Pipeline**
+   • Branching model, CI/CD flow, environments (dev/stage/prod), infrastructure-as-code outline, secret management, monitoring & logging.
+
+10. **Risk Register & Mitigations**
+    • Identify top technical/product risks with mitigation strategies.
+
+11. **Success Metrics Alignment**
+    • Map the PRD’s success metrics to measurable checkpoints in the roadmap.
+
+12. **Next Steps & Open Questions**
+    • List decisions still required, research spikes, and stakeholder approvals.
+
+13. **Clarifying Questions**
+    • If any new uncertainties remain *after* considering the provided clarification answers, list them here; otherwise write "None outstanding."
+
+Formatting rules:
+• Use H2/H3 headings.
+• Tables or code blocks where clarity improves.
+• Keep language concise yet instructional; assume a junior developer audience.
+• All items must be actionable and sequenced logically.
+
+Return ONLY the Markdown plan—no additional commentary.
