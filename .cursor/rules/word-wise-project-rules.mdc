@@ -51,3 +51,210 @@ docker-compose ps
 Access the application at: http://localhost:3000/ (served from Docker container)
 
 **Failure to follow the Docker development requirements has repeatedly caused environment issues. Always prioritize containerized development over local machine development.**
+
+## Environment Variables Setup
+
+### File Structure (All Working Correctly)
+- `/.env` - Root environment file (gitignored, contains real Supabase credentials)
+- `/.env.example` - Root template (tracked in git)  
+- `/frontend/.env` - Frontend copy (gitignored, same credentials as root)
+- `/frontend/.env.example` - Frontend template (tracked in git)
+
+### Docker Integration
+- Root `.env` is read by Docker Compose via `${VARIABLE_NAME}` syntax
+- Variables injected into frontend container via docker-compose.yml environment section
+- Frontend Vite server accesses via `import.meta.env.VITE_*` pattern
+- Both root and frontend `.env` files contain identical Supabase credentials
+
+### CRITICAL Rule for AI Assistants
+**Environment variables are properly configured and working. Do NOT:**
+- Assume ENV issues when CSS/styling problems occur
+- Try to "fix" ENV when unrelated frontend issues happen  
+- Create placeholder ENV files - real credentials already exist
+- Blame ENV for frontend compilation, styling, or Tailwind issues
+
+### Debugging ENV vs Other Issues
+- **ENV Problem Signs**: Console errors about missing/invalid Supabase credentials, authentication failures
+- **NOT ENV Problems**: CSS not applying, Tailwind not working, UI styling issues, component rendering problems
+- **Quick Test**: If test login button works and no Supabase errors in console, ENV is fine
+
+### If Real ENV Issues Suspected
+1. Check `docker-compose logs frontend` for credential-related errors
+2. Verify both root and frontend ENV files have same values: `diff .env frontend/.env`
+3. Confirm Docker container restart after ENV changes: `docker-compose restart frontend`
+4. Check Supabase dashboard for project status and correct URLs
+
+## Tailwind CSS v4 Configuration - CRITICAL RULE
+
+### Project Uses Tailwind CSS v4+ 
+**This project is configured for Tailwind CSS v4+ with Vite integration. Do NOT use legacy Tailwind v3 syntax.**
+
+### CORRECT Tailwind v4 Setup (Current Configuration)
+- **Package**: `@tailwindcss/vite` v4.1.10+ 
+- **Vite Plugin**: `tailwindcss()` imported from `@tailwindcss/vite`
+- **CSS Import**: `@import "tailwindcss";` (NOT @tailwind directives)
+- **Config File**: `tailwind.config.js` (minimal, extensions only)
+
+### ❌ NEVER USE These Legacy v3 Patterns
+
+#### CSS File Syntax
+```css
+/* ❌ WRONG - v3 syntax that BREAKS v4 */
+@tailwind base;
+@tailwind components; 
+@tailwind utilities;
+
+/* ❌ WRONG - v3 custom component syntax */
+@layer components {
+  .btn-primary {
+    @apply bg-blue-500 text-white;
+  }
+}
+```
+
+#### Config File Patterns
+```js
+// ❌ WRONG - v3 color config that doesn't work in v4
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        'primary-dark': '#2b2d42',
+        'custom-blue': {
+          50: '#eff6ff',
+          500: '#3b82f6'
+        }
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif']
+      }
+    }
+  }
+}
+```
+
+#### Plugin Configuration
+```js
+// ❌ WRONG - v3 plugin syntax
+const plugin = require('tailwindcss/plugin')
+module.exports = {
+  plugins: [
+    plugin(function({ addUtilities }) {
+      addUtilities({
+        '.custom-class': {
+          'property': 'value'
+        }
+      })
+    })
+  ]
+}
+```
+
+### ✅ ALWAYS USE These v4 Patterns
+
+#### CSS File Syntax
+```css
+/* ✅ CORRECT - v4 syntax */
+@import "tailwindcss";
+
+/* ✅ CORRECT - v4 custom properties */
+@theme {
+  --color-primary-dark: #2b2d42;
+  --color-medium-gray: #8d99ae;
+  --color-light-gray: #edf2f4;
+  --font-family-display: "Inter", sans-serif;
+}
+
+/* ✅ CORRECT - v4 custom utilities */
+@utility btn-primary {
+  background-color: theme(--color-primary-dark);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+}
+```
+
+#### Vite Configuration
+```js
+// ✅ CORRECT - v4 with Vite plugin
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+})
+```
+
+#### Package Dependencies
+```json
+// ✅ CORRECT - v4 packages
+{
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.10",
+    "tailwindcss": "^4.1.10"
+  }
+}
+
+// ❌ WRONG - mixing v3 and v4
+{
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0"
+  }
+}
+```
+
+### Common Class Name Differences
+```html
+<!-- ✅ CORRECT - These work in both v3 and v4 -->
+<div class="bg-slate-800 text-white rounded-xl shadow-lg">
+
+<!-- ✅ CORRECT - v4 supports these standard patterns -->
+<div class="max-w-sm mx-auto p-6 space-y-4">
+<button class="hover:bg-slate-700 focus:ring-2 focus:ring-slate-500">
+
+<!-- ⚠️  WATCH OUT - Custom colors need @theme definition in v4 -->
+<div class="bg-primary-dark text-custom-gray">
+<!-- Only works if defined in @theme block -->
+```
+
+### Critical Signs of v3/v4 Mismatch
+- **CSS not applying** despite correct class names
+- **Classes work in browser dev tools** but not in app
+- **Hot reload updates CSS** but changes don't appear
+- **No compilation errors** but styling completely missing
+- **Custom colors not recognized** (primary-dark, custom-blue, etc.)
+- **Build warnings** about unknown @tailwind directives
+
+### AI Assistant Requirements
+1. **ALWAYS check package.json** for Tailwind version before suggesting CSS changes
+2. **VERIFY CSS import syntax** matches the Tailwind version in use
+3. **NEVER assume v3 syntax** - this project uses v4+
+4. **If styling doesn't work**, check CSS import syntax FIRST before other debugging
+5. **Use standard Tailwind colors** (slate, blue, red) unless custom colors defined in @theme
+6. **Don't suggest @layer or @apply directives** - use @utility for v4 custom styles
+
+### Quick Version Check
+```bash
+# Check if project uses v4
+grep "@tailwindcss/vite" frontend/package.json
+# Should return: "@tailwindcss/vite": "^4.1.10"
+
+# Check CSS syntax  
+head -1 frontend/src/index.css  
+# Should return: @import "tailwindcss";
+
+# Verify no v3 packages
+grep -E "(autoprefixer|postcss)" frontend/package.json
+# Should return nothing (v4 doesn't need these)
+```
+
+### Emergency Fix for v3/v4 Syntax Issues
+If CSS suddenly stops working:
+1. **Replace** `@tailwind` directives with `@import "tailwindcss";`
+2. **Remove** any `@layer` or `@apply` usage
+3. **Check** for custom colors - use standard Tailwind colors or define in @theme
+4. **Restart** Docker container: `docker-compose restart frontend`
+5. **Verify** browser shows immediate styling changes
+
+**This rule exists because v3/v4 syntax confusion has repeatedly caused significant development delays. Following this prevents hours of wasted debugging time.**
