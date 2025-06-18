@@ -13,6 +13,10 @@ Globs: **/*.ts, **/*.tsx, **/*.js, **/*.jsx, **/*.json, **/*.md
 This project follows a detailed task list located at:
 **`tasks/tasks-wordwise-opus.md`**
 
+**Master Project Plan Reference:**
+The task list is adapted from the comprehensive project plan at **`planning/planv2claudeOpus.md`**. 
+If there is ever any clarification needed or ambiguity in requirements, refer to this master project plan as the authoritative source for project scope, goals, and detailed specifications.
+
 ### CRITICAL: Read Docker Development Requirements
 
 **BEFORE starting any development work, you MUST read the Docker development environment requirements at the top of `tasks/tasks-wordwise-opus.md`.** 
