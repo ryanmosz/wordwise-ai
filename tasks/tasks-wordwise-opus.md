@@ -1,3 +1,39 @@
+# 🚨 CRITICAL: DOCKER DEVELOPMENT ENVIRONMENT REQUIRED 🚨
+
+**FOR ANY AI WORKING ON THIS PROJECT:**
+
+This project **MUST** be developed exclusively within the Docker containerized environment. **DO NOT** develop directly on the local machine using `npm run dev` or similar local commands.
+
+## Why Docker Development is Required:
+- **Development-Production Parity**: Ensures the local development environment matches production deployment
+- **Containerized Deployment**: The application is designed to be deployed as Docker containers
+- **Environment Consistency**: Prevents "works on my machine" issues during deployment
+- **Dependency Management**: All dependencies and configurations are containerized
+
+## Correct Development Workflow:
+```bash
+# Start the development environment
+docker-compose up
+
+# Access the application at http://localhost:3000/
+# Frontend runs in container with hot reload
+# PostgreSQL database runs in separate container
+```
+
+## ⚠️ WRONG - Do Not Use:
+- `npm run dev` (direct local development)
+- `npx vite` (local Vite server)
+- Direct Node.js/npm commands outside containers
+
+## Environment Variables:
+- Root `.env` file contains environment variables for Docker Compose
+- Variables are injected into containers via `docker-compose.yml`
+- Both `frontend/.env` and root `.env` should contain the same Supabase credentials
+
+**Forgetting this Docker requirement has repeatedly caused environment variable loading issues, port conflicts, and deployment inconsistencies. Always verify containers are running before proceeding with any development tasks.**
+
+---
+
 # WordWise AI MVP - Detailed Task List
 
 ## Relevant Files
@@ -6,7 +42,11 @@
 - `docker-compose.yml` - Docker orchestration for development environment with frontend and postgres services
 - `frontend/Dockerfile.dev` - Frontend container configuration for Node.js development
 - `.env.example` - Environment variable template with Supabase placeholders
-- `.env` - Local environment configuration (created from .env.example)
+- `.env` - Local environment configuration (created from .env.example, used by Docker Compose)
+- `frontend/.env` - Frontend environment file for Vite development server inside container
+- `frontend/.env.example` - Frontend environment template file
+
+**Development Workflow**: Use `docker-compose up` for containerized development environment
 
 ### Frontend Core
 - `frontend/package.json` - Project dependencies and scripts (React 19, TypeScript, Vite, Zustand, Supabase, React Router)
@@ -35,7 +75,7 @@
 ### Authentication & Services
 - `frontend/src/services/supabase.ts` - Supabase client initialization with environment variable validation
 - `frontend/src/store/authStore.ts` - Zustand store for authentication state with signIn, signUp, signOut, and checkUser methods
-- `frontend/src/pages/LoginPage.tsx` - Login page component
+- `frontend/src/pages/LoginPage.tsx` - Login page component with email/password form and test user login button
 - `frontend/src/pages/SignupPage.tsx` - Signup page component
 - `frontend/src/components/auth/AuthForm.tsx` - Reusable authentication form
 
@@ -93,7 +133,7 @@
   - [x] 3.7 Create authentication store with Zustand
 
 - [ ] 4.0 Authentication UI Implementation
-  - [ ] 4.1 Create LoginPage component with form
+  - [x] 4.1 Create LoginPage component with form
   - [ ] 4.2 Create SignupPage component with validation
   - [ ] 4.3 Create reusable AuthForm component
   - [ ] 4.4 Implement React Router navigation
