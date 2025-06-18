@@ -1,6 +1,7 @@
 ---
 description: Guidelines for managing task lists in markdown files to track progress on completing a PRD
 globs: **/tasks/**/*.md, **/tasks-*.md
+alwaysApply: false
 ---
 
 # Task List Management
@@ -38,4 +39,6 @@ When working with task lists, the AI must:
 3. Add newly discovered tasks.
 4. Keep "Relevant Files" accurate and up to date.
 5. Before starting work, check which sub‑task is next.
-6. After implementing a sub‑task, update the file and then pause for user approval.
+
+**Most Important** 
+6. After implementing a sub‑task, update the file and then pause for user approval. You have permission to complete one and only one subtask. Stop after completion of any subtask. Verify that the subtask you were working on is fully complete. run any tests available. inform the user as to your suggested next step.
