@@ -58,6 +58,12 @@ Follow the task completion protocol outlined in the process-task-list.mdc rule:
    - Address any feedback or requested modifications
    - Only begin implementation after receiving approval
 
+5. **Complete the approved task thoroughly**
+   - Implement the task to the best of the agent's ability following the approved plan
+   - When implementation is complete, run ALL testing steps specified in the task list
+   - Verify all test criteria are met before marking the task as complete
+   - Document any issues or deviations from the plan
+
 **This process prevents misaligned implementation and ensures quality delivery.**
 
 ### Project Context
