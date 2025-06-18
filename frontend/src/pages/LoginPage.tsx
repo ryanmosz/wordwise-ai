@@ -17,7 +17,7 @@ export function LoginPage() {
 
     try {
       await signIn(email, password)
-      navigate('/editor')
+      navigate('/app')
     } catch (err: any) {
       setError(err.message || 'Login failed')
     } finally {
@@ -36,7 +36,7 @@ export function LoginPage() {
     try {
       // Automatically log in with test credentials
       await signIn('test@wordwise.ai', 'testpass123')
-      navigate('/editor')
+      navigate('/app')
     } catch (err: any) {
       setError(err.message || 'Test login failed')
     } finally {
@@ -144,7 +144,7 @@ export function LoginPage() {
 
         {/* Footer */}
         <p className="mt-8 text-center text-xs text-slate-600">
-          By signing in, you agree to our Terms of Service and Privacy Policy
+          By signing in, you don't agree to anything
         </p>
       </div>
     </div>

@@ -258,3 +258,92 @@ If CSS suddenly stops working:
 5. **Verify** browser shows immediate styling changes
 
 **This rule exists because v3/v4 syntax confusion has repeatedly caused significant development delays. Following this prevents hours of wasted debugging time.**
+
+## WordWise Design System - Consistency Rules
+
+### Color Palette (Slate-based Professional Theme)
+**Primary Colors:**
+- `slate-800` - Primary text, main CTAs, headings
+- `slate-600` - Secondary text, secondary buttons  
+- `slate-400` - Placeholder text, muted elements
+- `slate-200` - Borders, dividers, subtle backgrounds
+- `slate-100` - Light backgrounds, gradients
+- `white` - Card backgrounds, main surfaces
+
+**Accent Colors:**
+- `red-50/200/700` - Error states, validation
+- `blue-50/600` - Links, informational elements
+- `green-50/600` - Success states
+
+### Typography Hierarchy
+**Headings:**
+- Main title: `text-5xl font-extrabold text-slate-800 tracking-tight`
+- Subtitle: `text-lg font-medium text-slate-600`
+- Section headers: `text-sm font-semibold text-slate-800`
+
+**Body Text:**
+- Primary: `text-slate-800`
+- Secondary: `text-slate-600`
+- Muted: `text-slate-400`
+- Small text: `text-xs text-slate-600`
+
+### Layout Patterns
+**Page Structure:**
+- Full screen: `min-h-screen`
+- Centered content: `flex items-center justify-center`
+- Gradient backgrounds: `bg-gradient-to-br from-slate-100 to-white`
+- Container constraints: `max-w-sm` for forms, `max-w-2xl` for content
+
+**Card Components:**
+- Background: `bg-white`
+- Borders: `border border-slate-200`
+- Corners: `rounded-2xl` for cards, `rounded-xl` for inputs/buttons
+- Shadows: `shadow-xl` for main cards, `shadow-sm` for buttons
+
+### Form Elements
+**Input Fields:**
+- Base: `w-full px-4 py-3 border-2 border-slate-200 rounded-xl`
+- Focus: `focus:outline-none focus:ring-2 focus:ring-slate-800/20 focus:border-slate-800`
+- Placeholder: `placeholder-slate-400`
+- Transitions: `transition-all duration-200`
+
+**Buttons:**
+- Primary: `bg-slate-800 hover:bg-slate-700 text-white font-semibold py-3.5 px-4 rounded-xl`
+- Secondary: `bg-slate-600 hover:bg-slate-500 text-white font-semibold py-3.5 px-4 rounded-xl`
+- Focus: `focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-800/50`
+- Disabled: `disabled:opacity-50 disabled:cursor-not-allowed`
+
+### Interactive States
+**Standard Transitions:**
+- All interactive elements: `transition-all duration-200`
+- Links: `transition-colors duration-200`
+
+**Focus States:**
+- Form inputs: Ring with 20% opacity of primary color
+- Buttons: Ring with 50% opacity, 2px offset
+
+### Spacing System
+**Container Spacing:**
+- Page padding: `py-12 px-4 sm:px-6 lg:px-8`
+- Card padding: `p-8`
+- Form spacing: `space-y-6` for sections, `space-y-5` for fields
+- Section margins: `mb-8` for headers, `mt-8` for footers
+
+### Component Patterns
+**Error Messages:**
+- `bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm`
+
+**Dividers:**
+- `border-t border-slate-200` with text overlay using bg-white
+
+**Loading States:**
+- Use `opacity-50` and `cursor-not-allowed` for disabled states
+- Spinner or "Loading..." text
+
+### Consistency Requirements
+1. **Always use slate color palette** for primary interface elements
+2. **Maintain rounded-xl/2xl corner radius** throughout the app
+3. **Use consistent padding scales** (px-4, py-3, p-8, etc.)
+4. **Apply transitions to all interactive elements**
+5. **Follow the typography hierarchy** for headings and text
+6. **Use the established card pattern** for containers
