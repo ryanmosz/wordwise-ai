@@ -33,8 +33,8 @@
 - `frontend/src/hooks/` - Custom React hooks
 
 ### Authentication & Services
-- `frontend/src/services/supabase.ts` - Supabase client initialization
-- `frontend/src/store/authStore.ts` - Zustand store for authentication state
+- `frontend/src/services/supabase.ts` - Supabase client initialization with environment variable validation
+- `frontend/src/store/authStore.ts` - Zustand store for authentication state with signIn, signUp, signOut, and checkUser methods
 - `frontend/src/pages/LoginPage.tsx` - Login page component
 - `frontend/src/pages/SignupPage.tsx` - Signup page component
 - `frontend/src/components/auth/AuthForm.tsx` - Reusable authentication form
@@ -83,14 +83,14 @@
   - [x] 2.5 Set up basic App.tsx with welcome message
   - [x] 2.6 Configure Vite for port 3000
 
-- [ ] 3.0 Supabase Project Configuration
-  - [ ] 3.1 Create Supabase project via dashboard
-  - [ ] 3.2 Copy project credentials (URL and anon key)
-  - [ ] 3.3 Create .env file from .env.example
-  - [ ] 3.4 Execute database schema SQL
-  - [ ] 3.5 Configure email authentication settings
-  - [ ] 3.6 Create Supabase client service
-  - [ ] 3.7 Create authentication store with Zustand
+- [x] 3.0 Supabase Project Configuration
+  - [x] 3.1 Create Supabase project via dashboard
+  - [x] 3.2 Copy project credentials (URL and anon key)
+  - [x] 3.3 Create .env file from .env.example
+  - [x] 3.4 Execute database schema SQL
+  - [x] 3.5 Configure email authentication settings
+  - [x] 3.6 Create Supabase client service
+  - [x] 3.7 Create authentication store with Zustand
 
 - [ ] 4.0 Authentication UI Implementation
   - [ ] 4.1 Create LoginPage component with form
