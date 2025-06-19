@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+/* Custom WordWise colors using Tailwind v4 @theme syntax */
+@theme {
+  --color-ice-100: #d9f0ff; /* Light ice blue for hover states */
+}

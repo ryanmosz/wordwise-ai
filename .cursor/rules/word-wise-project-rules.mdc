@@ -25,7 +25,21 @@ Follow the task completion protocol outlined in the process-task-list.mdc rule:
 - Wait for user permission before proceeding to next sub-task
 - Mark completed tasks with `[x]` in the task list
 - Update the "Relevant Files" section as you work
-- Only mark a task as complete after all testing is complete and verified. 
+- Only mark a task as complete after all testing is complete and verified.
+
+### Visual Verification Requirements
+
+When implementing UI/UX features:
+- **Always request screenshots** for visual components after implementation
+- Include specific visual checks in the verification steps
+- Ask the user to provide screenshots when:
+  - New UI components are created
+  - Layout changes are made
+  - Color schemes or styling is modified
+  - Interactive states (hover, focus, active) are implemented
+  - Responsive behavior needs verification
+- Compare screenshots against design specifications or mockups
+- Document any visual discrepancies found through screenshot review 
 
 ### Task Startup Process - REQUIRED
 
@@ -324,6 +338,7 @@ If CSS suddenly stops working:
 - `red-50/200/700` - Error states, validation
 - `blue-50/600` - Links, informational elements
 - `green-50/600` - Success states
+- `ice-100` (#d9f0ff) - Hover states, interactive feedback
 
 ### Typography Hierarchy
 **Headings:**

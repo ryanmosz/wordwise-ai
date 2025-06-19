@@ -157,8 +157,8 @@ docker-compose up
   - [x] UTC.10 Document any immediate improvements for next time in TEMPLATE_IMPROVEMENTS.md
 
 - [ ] 5.0 Document Editor Interface
-  - [ ] 5.1 Install TipTap editor dependencies
-  - [ ] 5.2 Create EditorPage layout component
+  - [x] 5.1 Install TipTap editor dependencies
+  - [x] 5.2 Create EditorPage layout component
   - [ ] 5.3 Implement TextEditor with TipTap
   - [ ] 5.4 Create document store with Zustand
   - [ ] 5.5 Implement auto-save functionality
