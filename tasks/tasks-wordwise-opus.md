@@ -75,12 +75,12 @@ docker-compose up
 ### Authentication & Services
 - `frontend/src/services/supabase.ts` - Supabase client initialization with environment variable validation
 - `frontend/src/store/authStore.ts` - Zustand store for authentication state with signIn, signUp, signOut, and checkUser methods
-- `frontend/src/pages/LoginPage.tsx` - Modern login page component using AuthForm component with test user login functionality
+- `frontend/src/pages/LoginPage.tsx` - Modern login page component using AuthForm component with auto-fill test user login functionality
 - `frontend/tailwind.config.js` - Tailwind v4 configuration
 - `frontend/src/index.css` - Fixed Tailwind v4 import syntax (@import "tailwindcss" instead of @tailwind directives)
 - `frontend/src/pages/SignupPage.tsx` - Complete signup page component with password validation, strength indicator, confirmation field, terms acceptance, comprehensive form validation, and temporary "unavailable" message for account creation
 - `frontend/src/App.tsx` - Updated with signup route configuration
-- `frontend/src/components/auth/AuthForm.tsx` - Reusable authentication form component with email/password validation, loading states, error handling, and support for both login and signup modes
+- `frontend/src/components/auth/AuthForm.tsx` - Reusable authentication form component with email/password validation, loading states, error handling, support for both login and signup modes, and auto-fill functionality via ref forwarding
 
 ### Editor & Documents
 - `frontend/src/pages/EditorPage.tsx` - Main editor interface
@@ -140,7 +140,7 @@ docker-compose up
   - [x] 4.2 Create SignupPage component with validation
   - [x] 4.3 Create reusable AuthForm component
   - [x] 4.4 Implement React Router navigation
-  - [ ] 4.5 Add test user login functionality
+  - [x] 4.5 Add test user login functionality
   - [ ] 4.6 Create LoadingSpinner component
   - [ ] 4.7 Implement form validation and error handling
 
@@ -811,7 +811,7 @@ Component structure:
   - Error message area
 - Link to signup
 - Divider
-- Test User Login button (green, prominent)
+   - Test User Login button (slate secondary styling, prominent)
 ```
 
 Pseudocode:
@@ -848,7 +848,7 @@ export function LoginPage() {
       </form>
       {error && <p>{error}</p>}
       <Link to="/signup">Sign up here</Link>
-      <button onClick={handleTestLogin} green>Test User Login</button>
+      <button onClick={handleTestLogin} className="slate-secondary">Test User Login</button>
     </div>
   )
 }
@@ -1033,7 +1033,7 @@ const handleTestLogin = async () => {
 
 Style test button:
 ```
-className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg"
+className="w-full bg-slate-600 hover:bg-slate-500 text-white font-semibold py-3.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-600/50 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
 ```
 
 **Test**:

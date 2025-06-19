@@ -44,6 +44,7 @@ Follow the task completion protocol outlined in the process-task-list.mdc rule:
    - Outline the approach based on both the task details and original requirements
    - Identify potential challenges or dependencies
    - Note any assumptions or decisions that need clarification
+   - For testing purposes, make liberal use of web console output to facilitate debugging
 
 4. **Present the plan for approval** before beginning implementation
    - Wait for explicit approval before proceeding with any coding

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { AuthForm } from '../components/auth/AuthForm'
@@ -8,6 +8,7 @@ export function LoginPage() {
   const [isTestLoading, setIsTestLoading] = useState(false)
   const { signIn } = useAuthStore()
   const navigate = useNavigate()
+  const [fillAndSubmitFunction, setFillAndSubmitFunction] = useState<((email: string, password: string) => void) | null>(null)
 
   const handleLogin = async (data: { email: string; password: string }) => {
     setError('')
@@ -17,22 +18,25 @@ export function LoginPage() {
     } catch (err: any) {
       setError(err.message || 'Login failed')
       throw err // Re-throw so AuthForm can handle loading state
-    }
-  }
-
-  const handleTestLogin = async () => {
-    setError('')
-    setIsTestLoading(true)
-
-    try {
-      await signIn('test@wordwise.ai', 'testpass123')
-      navigate('/editor')
-    } catch (err: any) {
-      setError(err.message || 'Test login failed')
     } finally {
+      // Reset test loading state if it was set
       setIsTestLoading(false)
     }
   }
+
+  const handleTestLogin = () => {
+    setError('')
+    setIsTestLoading(true)
+    
+    // Use the stored fillAndSubmit function
+    if (fillAndSubmitFunction) {
+      fillAndSubmitFunction('test@wordwise.ai', 'testpass123')
+    }
+  }
+
+  const handleAuthFormReady = useCallback((fillAndSubmit: (email: string, password: string) => void) => {
+    setFillAndSubmitFunction(() => fillAndSubmit)
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 to-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -53,6 +57,7 @@ export function LoginPage() {
             mode="login"
             onSubmit={handleLogin}
             error={error}
+            onReady={handleAuthFormReady}
           />
 
           <div className="text-center mt-6">

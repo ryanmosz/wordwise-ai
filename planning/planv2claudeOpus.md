@@ -554,7 +554,7 @@ Create login and signup pages with a test user button for easy development acces
    - Password input field
    - Login button
    - Link to signup page
-   - Test User Login button (bright green, prominent)
+   - Test User Login button (slate secondary styling, prominent)
    - Error message display area
    ```
 

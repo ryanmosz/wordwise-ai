@@ -1,9 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 
 interface AuthFormProps {
   mode: 'login' | 'signup'
   onSubmit: (data: AuthData) => Promise<void>
   error?: string
+  initialEmail?: string
+  initialPassword?: string
+  onReady?: (fillAndSubmit: (email: string, password: string) => void) => void
 }
 
 interface AuthData {
@@ -18,16 +21,73 @@ interface FormErrors {
   confirmPassword?: string
 }
 
-export function AuthForm({ mode, onSubmit, error }: AuthFormProps) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+export function AuthForm({ 
+  mode, 
+  onSubmit, 
+  error, 
+  initialEmail = '', 
+  initialPassword = '',
+  onReady
+}: AuthFormProps) {
+  const [email, setEmail] = useState(initialEmail)
+  const [password, setPassword] = useState(initialPassword)
   const [confirmPassword, setConfirmPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
+  const formRef = useRef<HTMLFormElement>(null)
 
-  const validateEmail = (email: string): boolean => {
-    return email.includes('@') && email.includes('.')
+  // Update state when initial values change
+  useEffect(() => {
+    setEmail(initialEmail)
+    setPassword(initialPassword)
+  }, [initialEmail, initialPassword])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setErrors({})
+
+    // Validate form
+    const validationErrors = validateForm()
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors)
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      await onSubmit({
+        email,
+        password,
+        confirmPassword: mode === 'signup' ? confirmPassword : undefined
+      })
+    } catch (err) {
+      // Error handling is done by parent component via error prop
+    } finally {
+      setIsLoading(false)
+    }
   }
+
+  // Create fillAndSubmit function with useCallback
+  const fillAndSubmit = useCallback((newEmail: string, newPassword: string) => {
+    setEmail(newEmail)
+    setPassword(newPassword)
+    // Trigger form submission after state update
+    setTimeout(() => {
+      if (formRef.current) {
+        // Create and dispatch a submit event
+        const submitEvent = new Event('submit', { bubbles: true, cancelable: true })
+        formRef.current.dispatchEvent(submitEvent)
+      }
+    }, 100)
+  }, [])
+
+  // Pass fillAndSubmit function to parent when component mounts (only once)
+  useEffect(() => {
+    if (onReady) {
+      onReady(fillAndSubmit)
+    }
+  }, [onReady, fillAndSubmit])
 
   const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {}
@@ -58,30 +118,8 @@ export function AuthForm({ mode, onSubmit, error }: AuthFormProps) {
     return newErrors
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setErrors({})
-
-    // Validate form
-    const validationErrors = validateForm()
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      return
-    }
-
-    setIsLoading(true)
-
-    try {
-      await onSubmit({
-        email,
-        password,
-        confirmPassword: mode === 'signup' ? confirmPassword : undefined
-      })
-    } catch (err) {
-      // Error handling is done by parent component via error prop
-    } finally {
-      setIsLoading(false)
-    }
+  const validateEmail = (email: string): boolean => {
+    return email.includes('@') && email.includes('.')
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -125,7 +163,7 @@ export function AuthForm({ mode, onSubmit, error }: AuthFormProps) {
   }
 
   return (
-    <form className="space-y-6" onSubmit={handleSubmit}>
+    <form className="space-y-6" onSubmit={handleSubmit} ref={formRef}>
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
           {error}
