@@ -78,7 +78,8 @@ docker-compose up
 - `frontend/src/pages/LoginPage.tsx` - Modern login page component with custom color scheme, card design, improved typography, and compact form layout
 - `frontend/tailwind.config.js` - Tailwind v4 configuration
 - `frontend/src/index.css` - Fixed Tailwind v4 import syntax (@import "tailwindcss" instead of @tailwind directives)
-- `frontend/src/pages/SignupPage.tsx` - Signup page component
+- `frontend/src/pages/SignupPage.tsx` - Complete signup page component with password validation, strength indicator, confirmation field, terms acceptance, comprehensive form validation, and temporary "unavailable" message for account creation
+- `frontend/src/App.tsx` - Updated with signup route configuration
 - `frontend/src/components/auth/AuthForm.tsx` - Reusable authentication form
 
 ### Editor & Documents
@@ -136,7 +137,7 @@ docker-compose up
 
 - [ ] 4.0 Authentication UI Implementation
   - [x] 4.1 Create LoginPage component with form
-  - [ ] 4.2 Create SignupPage component with validation
+  - [x] 4.2 Create SignupPage component with validation
   - [ ] 4.3 Create reusable AuthForm component
   - [ ] 4.4 Implement React Router navigation
   - [ ] 4.5 Add test user login functionality
@@ -185,6 +186,16 @@ docker-compose up
   - [ ] 9.4 Add reading level selector
   - [ ] 9.5 Implement settings persistence
   - [ ] 9.6 Create settings store or extend authStore
+
+- [ ] U.0 User Registration Infrastructure  
+  - [ ] U.0.0 Add planning details for all steps in section U to the master planning document `planning/planv2claudeOpus.md`, such that it matches the level of detail and quality already in that document for other steps
+  - [ ] U.0.1 Add detailed task implementations for all steps in Section U to the task list `tasks/tasks-wordwise-opus.md`
+  - [ ] U.2 Configure Row Level Security (RLS) policies for user data isolation
+  - [ ] U.3 Set up user profile creation triggers in database
+  - [ ] U.4 Implement registration error handling (duplicate emails, validation)
+  - [ ] U.5 Create default user settings initialization for new accounts  
+  - [ ] U.6 Enable actual user signup and replace temporary "unavailable" message
+  - [ ] U.7 (optional) Create user onboarding flow
 
 - [ ] 10.0 Enhanced AI Features
   - [ ] 10.1 Update edge function prompt structure
