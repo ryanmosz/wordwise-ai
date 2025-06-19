@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 
 export function EditorPage() {
+  // Visual reference: docs/screenshots/editor-layout-v1.png
+  // Hover effects use ice-100 (#d9f0ff) with text-slate-900
   const navigate = useNavigate()
   const { signOut } = useAuthStore()
   const [documentTitle, setDocumentTitle] = useState('Untitled Document')
