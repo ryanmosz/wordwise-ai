@@ -36,7 +36,33 @@ export function SignupPage() {
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
+    return emailRegex.test(email.trim())
+  }
+
+  const getEmailError = (email: string): string | null => {
+    const trimmedEmail = email.trim()
+    
+    if (!trimmedEmail) {
+      return 'Email is required'
+    }
+    
+    if (trimmedEmail.length > 254) {
+      return 'Email is too long'
+    }
+    
+    if (trimmedEmail.startsWith('@') || trimmedEmail.endsWith('@')) {
+      return 'Invalid email format'
+    }
+    
+    if (trimmedEmail.includes('..')) {
+      return 'Invalid email format'
+    }
+    
+    if (!validateEmail(trimmedEmail)) {
+      return 'Invalid email format'
+    }
+    
+    return null
   }
 
   const getPasswordStrength = (password: string): PasswordStrength => {
@@ -69,10 +95,9 @@ export function SignupPage() {
     const newErrors: FormErrors = {}
 
     // Email validation
-    if (!formData.email) {
-      newErrors.email = 'Email is required'
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
+    const emailError = getEmailError(formData.email)
+    if (emailError) {
+      newErrors.email = emailError
     }
 
     // Password validation
@@ -80,6 +105,8 @@ export function SignupPage() {
       newErrors.password = 'Password is required'
     } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters'
+    } else if (formData.password.length > 128) {
+      newErrors.password = 'Password is too long'
     }
 
     // Confirm password validation
@@ -129,16 +156,17 @@ export function SignupPage() {
     const newErrors: FormErrors = {}
     
     if (field === 'email') {
-      if (!formData.email) {
-        newErrors.email = 'Email is required'
-      } else if (!validateEmail(formData.email)) {
-        newErrors.email = 'Please enter a valid email address'
+      const emailError = getEmailError(formData.email)
+      if (emailError) {
+        newErrors.email = emailError
       }
     } else if (field === 'password') {
       if (!formData.password) {
         newErrors.password = 'Password is required'
       } else if (formData.password.length < 6) {
         newErrors.password = 'Password must be at least 6 characters'
+      } else if (formData.password.length > 128) {
+        newErrors.password = 'Password is too long'
       }
     } else if (field === 'confirmPassword') {
       if (!formData.confirmPassword) {

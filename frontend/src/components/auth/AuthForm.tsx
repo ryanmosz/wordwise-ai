@@ -96,10 +96,9 @@ export function AuthForm({
     const newErrors: FormErrors = {}
 
     // Email validation
-    if (!email) {
-      newErrors.email = 'Email is required'
-    } else if (!validateEmail(email)) {
-      newErrors.email = 'Invalid email format'
+    const emailError = getEmailError(email)
+    if (emailError) {
+      newErrors.email = emailError
     }
 
     // Password validation
@@ -107,6 +106,8 @@ export function AuthForm({
       newErrors.password = 'Password is required'
     } else if (password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters'
+    } else if (password.length > 128) {
+      newErrors.password = 'Password is too long'
     }
 
     // Confirm password validation (signup only)
@@ -122,7 +123,35 @@ export function AuthForm({
   }
 
   const validateEmail = (email: string): boolean => {
-    return email.includes('@') && email.includes('.')
+    // Comprehensive email regex pattern
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email.trim())
+  }
+
+  const getEmailError = (email: string): string | null => {
+    const trimmedEmail = email.trim()
+    
+    if (!trimmedEmail) {
+      return 'Email is required'
+    }
+    
+    if (trimmedEmail.length > 254) {
+      return 'Email is too long'
+    }
+    
+    if (trimmedEmail.startsWith('@') || trimmedEmail.endsWith('@')) {
+      return 'Invalid email format'
+    }
+    
+    if (trimmedEmail.includes('..')) {
+      return 'Invalid email format'
+    }
+    
+    if (!validateEmail(trimmedEmail)) {
+      return 'Invalid email format'
+    }
+    
+    return null
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -142,16 +171,17 @@ export function AuthForm({
     const newErrors: FormErrors = {}
     
     if (field === 'email') {
-      if (!email) {
-        newErrors.email = 'Email is required'
-      } else if (!validateEmail(email)) {
-        newErrors.email = 'Invalid email format'
+      const emailError = getEmailError(email)
+      if (emailError) {
+        newErrors.email = emailError
       }
     } else if (field === 'password') {
       if (!password) {
         newErrors.password = 'Password is required'
       } else if (password.length < 6) {
         newErrors.password = 'Password must be at least 6 characters'
+      } else if (password.length > 128) {
+        newErrors.password = 'Password is too long'
       }
     } else if (field === 'confirmPassword' && mode === 'signup') {
       if (!confirmPassword) {
@@ -184,7 +214,6 @@ export function AuthForm({
             name="email"
             type="email"
             autoComplete="email"
-            required
             value={email}
             onChange={(e) => handleInputChange('email', e.target.value)}
             onBlur={() => handleBlur('email')}
@@ -210,7 +239,6 @@ export function AuthForm({
               name="password"
               type={showPassword ? 'text' : 'password'}
               autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              required
               value={password}
               onChange={(e) => handleInputChange('password', e.target.value)}
               onBlur={() => handleBlur('password')}
@@ -245,7 +273,6 @@ export function AuthForm({
                 name="confirmPassword"
                 type={showConfirmPassword ? 'text' : 'password'}
                 autoComplete="new-password"
-                required
                 value={confirmPassword}
                 onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                 onBlur={() => handleBlur('confirmPassword')}
