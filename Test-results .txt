@@ -1,0 +1,5 @@
+If result is not included in this list, assume test passed. If result is included, the explanation is how the test failed. 
+
+Test one results: When clicking sign in without entering anything I see email is required but not password is required error. 
+
+
