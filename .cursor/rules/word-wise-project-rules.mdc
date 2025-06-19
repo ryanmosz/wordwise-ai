@@ -25,6 +25,7 @@ Follow the task completion protocol outlined in the process-task-list.mdc rule:
 - Wait for user permission before proceeding to next sub-task
 - Mark completed tasks with `[x]` in the task list
 - Update the "Relevant Files" section as you work
+- Only mark a task as complete after all testing is complete and verified. 
 
 ### Task Startup Process - REQUIRED
 
