@@ -144,6 +144,18 @@ docker-compose up
   - [x] 4.6 Create LoadingSpinner component
   - [x] 4.7 Implement form validation and error handling
 
+- [ ] UTC.0 Unplanned Template Creation
+  - [ ] UTC.1 Copy entire wordwise project to new directory (~/Dropbox/gauntlet/cohort2/react-supabase-saas-starter)
+  - [ ] UTC.2 Remove .git directory from the copy to start fresh
+  - [ ] UTC.3 Create TEMPLATE_NOTES.md with quick usage instructions
+  - [ ] UTC.4 Create TEMPLATE_SETUP_CHECKLIST.md with step-by-step setup guide
+  - [ ] UTC.5 Update README.md to be template-focused (or create TEMPLATE_README.md)
+  - [ ] UTC.6 Initialize new git repository in template directory
+  - [ ] UTC.7 Create new GitHub repository called "react-supabase-saas-starter"
+  - [ ] UTC.8 Add remote origin and push initial template commit
+  - [ ] UTC.9 Verify template repository is accessible and complete
+  - [ ] UTC.10 Document any immediate improvements for next time in TEMPLATE_IMPROVEMENTS.md
+
 - [ ] 5.0 Document Editor Interface
   - [ ] 5.1 Install TipTap editor dependencies
   - [ ] 5.2 Create EditorPage layout component
