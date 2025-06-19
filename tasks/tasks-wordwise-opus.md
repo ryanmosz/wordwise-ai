@@ -75,12 +75,12 @@ docker-compose up
 ### Authentication & Services
 - `frontend/src/services/supabase.ts` - Supabase client initialization with environment variable validation
 - `frontend/src/store/authStore.ts` - Zustand store for authentication state with signIn, signUp, signOut, and checkUser methods
-- `frontend/src/pages/LoginPage.tsx` - Modern login page component with custom color scheme, card design, improved typography, and compact form layout
+- `frontend/src/pages/LoginPage.tsx` - Modern login page component using AuthForm component with test user login functionality
 - `frontend/tailwind.config.js` - Tailwind v4 configuration
 - `frontend/src/index.css` - Fixed Tailwind v4 import syntax (@import "tailwindcss" instead of @tailwind directives)
 - `frontend/src/pages/SignupPage.tsx` - Complete signup page component with password validation, strength indicator, confirmation field, terms acceptance, comprehensive form validation, and temporary "unavailable" message for account creation
 - `frontend/src/App.tsx` - Updated with signup route configuration
-- `frontend/src/components/auth/AuthForm.tsx` - Reusable authentication form
+- `frontend/src/components/auth/AuthForm.tsx` - Reusable authentication form component with email/password validation, loading states, error handling, and support for both login and signup modes
 
 ### Editor & Documents
 - `frontend/src/pages/EditorPage.tsx` - Main editor interface
@@ -138,8 +138,8 @@ docker-compose up
 - [ ] 4.0 Authentication UI Implementation
   - [x] 4.1 Create LoginPage component with form
   - [x] 4.2 Create SignupPage component with validation
-  - [ ] 4.3 Create reusable AuthForm component
-  - [ ] 4.4 Implement React Router navigation
+  - [x] 4.3 Create reusable AuthForm component
+  - [x] 4.4 Implement React Router navigation
   - [ ] 4.5 Add test user login functionality
   - [ ] 4.6 Create LoadingSpinner component
   - [ ] 4.7 Implement form validation and error handling

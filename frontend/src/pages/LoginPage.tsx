@@ -1,46 +1,36 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
+import { AuthForm } from '../components/auth/AuthForm'
 
 export function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [isTestLoading, setIsTestLoading] = useState(false)
   const { signIn } = useAuthStore()
   const navigate = useNavigate()
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleLogin = async (data: { email: string; password: string }) => {
     setError('')
-    setIsLoading(true)
-
     try {
-      await signIn(email, password)
-      navigate('/app')
+      await signIn(data.email, data.password)
+      navigate('/editor')
     } catch (err: any) {
       setError(err.message || 'Login failed')
-    } finally {
-      setIsLoading(false)
+      throw err // Re-throw so AuthForm can handle loading state
     }
   }
 
   const handleTestLogin = async () => {
     setError('')
-    setIsLoading(true)
-    
-    // Set the test credentials
-    setEmail('test@wordwise.ai')
-    setPassword('testpass123')
+    setIsTestLoading(true)
 
     try {
-      // Automatically log in with test credentials
       await signIn('test@wordwise.ai', 'testpass123')
-      navigate('/app')
+      navigate('/editor')
     } catch (err: any) {
       setError(err.message || 'Test login failed')
     } finally {
-      setIsLoading(false)
+      setIsTestLoading(false)
     }
   }
 
@@ -59,87 +49,40 @@ export function LoginPage() {
 
         {/* Card Container */}
         <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
-          <form className="space-y-6" onSubmit={handleLogin}>
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
-                {error}
-              </div>
-            )}
+          <AuthForm
+            mode="login"
+            onSubmit={handleLogin}
+            error={error}
+          />
 
-            <div className="space-y-5">
-              <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-slate-800 mb-2">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-800/20 focus:border-slate-800 transition-all duration-200"
-                  placeholder="ryan.moszynski@gmail.com"
-                />
-              </div>
+          <div className="text-center mt-6">
+            <Link 
+              to="/signup" 
+              className="text-slate-600 hover:text-slate-800 text-sm font-medium transition-colors duration-200"
+            >
+              I don't have an account
+            </Link>
+          </div>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-slate-800 mb-2">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-800/20 focus:border-slate-800 transition-all duration-200"
-                  placeholder="••••••••"
-                />
-              </div>
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200" />
             </div>
-
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-base font-semibold text-white bg-slate-800 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-800/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-              >
-                {isLoading ? 'Signing in...' : 'Sign in'}
-              </button>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-3 bg-white text-slate-600 font-medium">Or</span>
             </div>
+          </div>
 
-            <div className="text-center">
-              <Link 
-                to="/signup" 
-                className="text-slate-600 hover:text-slate-800 text-sm font-medium transition-colors duration-200"
-              >
-                I don't have an account
-              </Link>
-            </div>
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-3 bg-white text-slate-600 font-medium">Or</span>
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="button"
-                onClick={handleTestLogin}
-                className="w-full bg-slate-600 hover:bg-slate-500 text-white font-semibold py-3.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-600/50 transition-all duration-200 shadow-sm"
-              >
-                Test User Login
-              </button>
-            </div>
-          </form>
+          <div>
+            <button
+              type="button"
+              onClick={handleTestLogin}
+              disabled={isTestLoading}
+              className="w-full bg-slate-600 hover:bg-slate-500 text-white font-semibold py-3.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-600/50 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isTestLoading ? 'Signing in...' : 'Test User Login'}
+            </button>
+          </div>
         </div>
 
         {/* Footer */}
