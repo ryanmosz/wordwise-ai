@@ -13,6 +13,8 @@
     "@supabase/supabase-js": "^2.50.0",
     "@tailwindcss/vite": "^4.1.10",
     "@tiptap/extension-highlight": "^2.14.0",
+    "@tiptap/extension-placeholder": "^2.14.0",
+    "@tiptap/extension-underline": "^2.14.0",
     "@tiptap/react": "^2.14.0",
     "@tiptap/starter-kit": "^2.14.0",
     "react": "^19.1.0",

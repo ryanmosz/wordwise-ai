@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
+import { TextEditor } from '../components/editor/TextEditor'
 
 export function EditorPage() {
   // Visual reference: docs/screenshots/editor-layout-v1.png
@@ -11,6 +12,7 @@ export function EditorPage() {
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
   const [wordCount, setWordCount] = useState(0)
   const [charCount, setCharCount] = useState(0)
+  const [content, setContent] = useState('')
 
   // Add console log for debugging
   console.log('EditorPage mounted - Layout verification')
@@ -27,6 +29,36 @@ export function EditorPage() {
   const handleExport = () => {
     // TODO: Implement export functionality
     console.log('Export clicked')
+  }
+
+  const handleContentChange = (newContent: string) => {
+    setContent(newContent)
+    
+    // Calculate word and character count
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(newContent, 'text/html')
+    
+    // Get text content but preserve line breaks between block elements
+    const blocks = doc.body.querySelectorAll('p, h1, h2, h3, h4, h5, h6, div, li')
+    let text = ''
+    
+    if (blocks.length > 0) {
+      // Extract text from each block element and join with spaces
+      const textArray = Array.from(blocks).map(block => (block.textContent || '').trim())
+      text = textArray.filter(t => t.length > 0).join(' ')
+    } else {
+      // Fallback for inline content
+      text = doc.body.textContent || ''
+    }
+    
+    // Better word counting - split by any whitespace and filter out empty strings
+    const words = text.trim().split(/\s+/).filter(word => word.length > 0)
+    const wordCount = text.trim() === '' ? 0 : words.length
+    
+    setWordCount(wordCount)
+    setCharCount(text.length)
+    
+    // TODO: Implement auto-save functionality
   }
 
   return (
@@ -93,15 +125,7 @@ export function EditorPage() {
         <div className="flex-1 flex flex-col bg-white">
           <div className="flex-1 p-8 overflow-y-auto">
             <div className="max-w-4xl mx-auto">
-              <div className="prose prose-slate max-w-none">
-                <p className="text-slate-700 text-lg">
-                  Type your content here...
-                </p>
-                <p className="text-slate-600 text-base mt-4">
-                  This editor area is centered with a maximum width to provide optimal reading experience. 
-                  The content will expand as you type, maintaining proper spacing and typography.
-                </p>
-              </div>
+              <TextEditor content={content} onChange={handleContentChange} />
             </div>
           </div>
         </div>
