@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { AuthForm } from '../components/auth/AuthForm'
+import { LoadingSpinner } from '../components/common/LoadingSpinner'
 
 export function LoginPage() {
   const [error, setError] = useState('')
@@ -85,7 +86,14 @@ export function LoginPage() {
               disabled={isTestLoading}
               className="w-full bg-slate-600 hover:bg-slate-500 text-white font-semibold py-3.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-600/50 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isTestLoading ? 'Signing in...' : 'Test User Login'}
+              {isTestLoading ? (
+                <div className="flex items-center justify-center">
+                  <LoadingSpinner size="sm" />
+                  <span className="ml-2">Signing in...</span>
+                </div>
+              ) : (
+                'Test User Login'
+              )}
             </button>
           </div>
         </div>

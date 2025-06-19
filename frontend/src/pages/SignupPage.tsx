@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { LoadingSpinner } from '../components/common/LoadingSpinner'
 
 interface FormData {
   email: string
@@ -328,7 +329,14 @@ export function SignupPage() {
                 disabled={isLoading || !isFormValid()}
                 className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-base font-semibold text-white bg-slate-800 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-800/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
-                {isLoading ? 'Creating Account...' : 'Create Account'}
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <LoadingSpinner size="sm" />
+                    <span className="ml-2">Creating Account...</span>
+                  </div>
+                ) : (
+                  'Create Account'
+                )}
               </button>
             </div>
 
