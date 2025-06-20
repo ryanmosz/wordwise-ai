@@ -11,12 +11,16 @@ export function EditorPage() {
   const { signOut } = useAuthStore()
   const { 
     currentDocument, 
+    documents,
     saveStatus, 
     loadDocuments, 
-    createDocument 
+    loadDocument,
+    createDocument,
+    updateDocumentDebounced 
   } = useDocumentStore()
   const [wordCount, setWordCount] = useState(0)
   const [charCount, setCharCount] = useState(0)
+  const [isInitialized, setIsInitialized] = useState(false)
 
   // Add console log for debugging
   console.log('EditorPage mounted - Layout verification')
@@ -24,14 +28,66 @@ export function EditorPage() {
   // Load documents on mount
   useEffect(() => {
     const initializeDocuments = async () => {
-      await loadDocuments()
-      // If no current document, create a new one
-      if (!currentDocument) {
-        await createDocument()
+      if (isInitialized) {
+        console.log('[Editor] Already initialized, skipping document load')
+        return
       }
+      
+      console.log('[Editor] Starting document initialization...')
+      await loadDocuments()
+      console.log('[Editor] loadDocuments completed')
+      setIsInitialized(true)
     }
     initializeDocuments()
-  }, [loadDocuments, createDocument, currentDocument])
+  }, [loadDocuments, isInitialized])
+
+  // Handle document selection after documents are loaded
+  useEffect(() => {
+    if (!isInitialized) {
+      console.log('[Editor] Not initialized yet, skipping document selection')
+      return
+    }
+    
+    console.log('[Editor] Document selection effect triggered')
+    console.log('[Editor] Current state:', {
+      documentsCount: documents.length,
+      hasCurrentDocument: !!currentDocument,
+      currentDocumentId: currentDocument?.id,
+      documentsIds: documents.map(d => d.id)
+    })
+    
+    const selectDocument = async () => {
+      // If we have documents but no current document, load the most recent one
+      if (documents.length > 0 && !currentDocument) {
+        // Check if we have a last edited document ID in localStorage
+        const lastDocumentId = localStorage.getItem('lastDocumentId')
+        console.log('[Editor] Last document ID from localStorage:', lastDocumentId)
+        console.log('[Editor] Available documents:', documents.map(d => ({ id: d.id, title: d.title })))
+        
+        // Try to find the last edited document in the current documents list
+        const lastDocument = lastDocumentId 
+          ? documents.find(doc => doc.id === lastDocumentId)
+          : null
+        
+        if (lastDocument) {
+          console.log('[Editor] Found last edited document, loading:', lastDocument.id)
+          await loadDocument(lastDocument.id)
+        } else if (documents.length > 0) {
+          // Fall back to the most recent document
+          console.log('[Editor] Last document not found, loading most recent:', documents[0].id)
+          await loadDocument(documents[0].id)
+        }
+      } 
+      // If no documents exist at all, create a new one
+      else if (documents.length === 0 && !currentDocument) {
+        console.log('[Editor] No documents found, creating new one...')
+        await createDocument()
+      } else {
+        console.log('[Editor] Document already loaded or being loaded, skipping selection')
+      }
+    }
+    selectDocument()
+  }, [documents, currentDocument, loadDocument, createDocument, isInitialized])
 
   const handleSignOut = async () => {
     await signOut()
@@ -72,7 +128,8 @@ export function EditorPage() {
     setWordCount(wordCount)
     setCharCount(text.length)
     
-    // TODO: Implement auto-save functionality
+    // Auto-save the content with debounce
+    updateDocumentDebounced({ content: newContent })
   }
 
   return (

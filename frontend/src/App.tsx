@@ -7,6 +7,7 @@ import { DashboardPage } from './pages/DashboardPage'
 import { ProtectedRoute } from './components/common/ProtectedRoute'
 import { useAuthStore } from './store/authStore'
 import { useEffect } from 'react'
+import { supabase } from './services/supabase'
 
 function AuthRedirect() {
   const { user, loading, checkUser } = useAuthStore()
@@ -30,6 +31,29 @@ function AuthRedirect() {
 }
 
 function App() {
+  const { checkUser } = useAuthStore()
+
+  useEffect(() => {
+    // Check user on mount
+    checkUser()
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('[Auth] Auth state changed:', _event)
+      if (session) {
+        checkUser()
+      } else {
+        // User logged out
+        useAuthStore.setState({ user: null, loading: false })
+      }
+    })
+
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [checkUser])
+
   return (
     <BrowserRouter>
       <Routes>

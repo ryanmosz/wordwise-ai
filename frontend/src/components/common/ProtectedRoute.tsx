@@ -11,7 +11,12 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // Initialize auth state on mount
   useEffect(() => {
-    checkUser()
+    // Small delay to ensure Supabase auth is initialized
+    const timer = setTimeout(() => {
+      checkUser()
+    }, 100)
+    
+    return () => clearTimeout(timer)
   }, [checkUser])
 
   // Show loading spinner while checking authentication

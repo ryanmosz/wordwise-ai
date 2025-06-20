@@ -161,7 +161,7 @@ docker-compose up
   - [x] 5.2 Create EditorPage layout component
   - [x] 5.3 Implement TextEditor with TipTap
   - [x] 5.4 Create document store with Zustand
-  - [ ] 5.5 Implement auto-save functionality
+  - [x] 5.5 Implement auto-save functionality
   - [ ] 5.6 Add document management dropdown
   - [ ] 5.7 Create word/character count display
 
