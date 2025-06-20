@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
+import { useDocumentStore } from '../store/documentStore'
 import { TextEditor } from '../components/editor/TextEditor'
 
 export function EditorPage() {
@@ -8,14 +9,29 @@ export function EditorPage() {
   // Hover effects use ice-100 (#d9f0ff) with text-slate-900
   const navigate = useNavigate()
   const { signOut } = useAuthStore()
-  const [documentTitle, setDocumentTitle] = useState('Untitled Document')
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved')
+  const { 
+    currentDocument, 
+    saveStatus, 
+    loadDocuments, 
+    createDocument 
+  } = useDocumentStore()
   const [wordCount, setWordCount] = useState(0)
   const [charCount, setCharCount] = useState(0)
-  const [content, setContent] = useState('')
 
   // Add console log for debugging
   console.log('EditorPage mounted - Layout verification')
+
+  // Load documents on mount
+  useEffect(() => {
+    const initializeDocuments = async () => {
+      await loadDocuments()
+      // If no current document, create a new one
+      if (!currentDocument) {
+        await createDocument()
+      }
+    }
+    initializeDocuments()
+  }, [loadDocuments, createDocument, currentDocument])
 
   const handleSignOut = async () => {
     await signOut()
@@ -32,8 +48,6 @@ export function EditorPage() {
   }
 
   const handleContentChange = (newContent: string) => {
-    setContent(newContent)
-    
     // Calculate word and character count
     const parser = new DOMParser()
     const doc = parser.parseFromString(newContent, 'text/html')
@@ -98,7 +112,7 @@ export function EditorPage() {
           <div className="flex items-center space-x-4">
             <div className="relative">
               <button className="flex items-center space-x-2 text-slate-800 hover:text-slate-900 hover:bg-ice-100 px-3 py-1 rounded-lg cursor-pointer transition-all duration-200">
-                <span className="font-medium">{documentTitle}</span>
+                <span className="font-medium">{currentDocument?.title || 'Untitled Document'}</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -125,7 +139,7 @@ export function EditorPage() {
         <div className="flex-1 flex flex-col bg-white">
           <div className="flex-1 p-8 overflow-y-auto">
             <div className="max-w-4xl mx-auto">
-              <TextEditor content={content} onChange={handleContentChange} />
+              <TextEditor content={currentDocument?.content || ''} onChange={handleContentChange} />
             </div>
           </div>
         </div>
