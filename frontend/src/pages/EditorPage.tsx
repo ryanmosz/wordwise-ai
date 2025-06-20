@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useDocumentStore } from '../store/documentStore'
 import { TextEditor } from '../components/editor/TextEditor'
+import { DocumentSelector } from '../components/editor/DocumentSelector'
+import { LoadingSpinner } from '../components/common/LoadingSpinner'
 
 export function EditorPage() {
   // Visual reference: docs/screenshots/editor-layout-v1.png
@@ -15,12 +17,13 @@ export function EditorPage() {
     saveStatus, 
     loadDocuments, 
     loadDocument,
-    createDocument,
-    updateDocumentDebounced 
+    updateDocumentDebounced,
+    cleanupEmptyDocuments
   } = useDocumentStore()
   const [wordCount, setWordCount] = useState(0)
   const [charCount, setCharCount] = useState(0)
   const [isInitialized, setIsInitialized] = useState(false)
+  const [isLoadingDocument, setIsLoadingDocument] = useState(true)
 
   // Add console log for debugging
   console.log('EditorPage mounted - Layout verification')
@@ -36,10 +39,15 @@ export function EditorPage() {
       console.log('[Editor] Starting document initialization...')
       await loadDocuments()
       console.log('[Editor] loadDocuments completed')
+      
+      // Clean up any existing empty documents
+      await cleanupEmptyDocuments()
+      console.log('[Editor] Cleanup completed')
+      
       setIsInitialized(true)
     }
     initializeDocuments()
-  }, [loadDocuments, isInitialized])
+  }, [loadDocuments, cleanupEmptyDocuments, isInitialized])
 
   // Handle document selection after documents are loaded
   useEffect(() => {
@@ -57,6 +65,8 @@ export function EditorPage() {
     })
     
     const selectDocument = async () => {
+      setIsLoadingDocument(true)
+      
       // If we have documents but no current document, load the most recent one
       if (documents.length > 0 && !currentDocument) {
         // Check if we have a last edited document ID in localStorage
@@ -78,16 +88,26 @@ export function EditorPage() {
           await loadDocument(documents[0].id)
         }
       } 
-      // If no documents exist at all, create a new one
-      else if (documents.length === 0 && !currentDocument) {
-        console.log('[Editor] No documents found, creating new one...')
-        await createDocument()
-      } else {
-        console.log('[Editor] Document already loaded or being loaded, skipping selection')
+      // Don't auto-create documents anymore - let user decide
+      else {
+        console.log('[Editor] No documents found, showing empty state')
       }
+      
+      setIsLoadingDocument(false)
     }
     selectDocument()
-  }, [documents, currentDocument, loadDocument, createDocument, isInitialized])
+  }, [documents, currentDocument, loadDocument, isInitialized])
+
+  // Cleanup empty documents on unmount
+  useEffect(() => {
+    return () => {
+      // If we're leaving with an unsaved new document that has no content, don't save it
+      const state = useDocumentStore.getState()
+      if (state.isNewDocument && !state.hasContentOrTitle(state.currentDocument)) {
+        console.log('[Editor] Leaving with empty new document, not saving')
+      }
+    }
+  }, [])
 
   const handleSignOut = async () => {
     await signOut()
@@ -132,14 +152,37 @@ export function EditorPage() {
     updateDocumentDebounced({ content: newContent })
   }
 
+  // Show loading spinner while initializing
+  if (!isInitialized || isLoadingDocument) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-200 via-slate-100 to-white flex items-center justify-center">
+        <div className="text-center">
+          <LoadingSpinner size="xl" />
+          <p className="mt-4 text-slate-600">Loading editor...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-200 via-slate-100 to-white flex flex-col">
       {/* Header Bar */}
       <header className="bg-white border-b border-slate-200 px-6 py-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">
-            WordWise AI
-          </h1>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => navigate('/documents')}
+              className="text-slate-600 hover:text-slate-900 hover:bg-ice-100 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 flex items-center"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Documents
+            </button>
+            <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">
+              WordWise AI
+            </h1>
+          </div>
           <div className="flex items-center space-x-4">
             <button
               onClick={handleSettings}
@@ -166,26 +209,18 @@ export function EditorPage() {
       {/* Document Bar */}
       <div className="bg-white border-b border-slate-200 px-6 py-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <button className="flex items-center space-x-2 text-slate-800 hover:text-slate-900 hover:bg-ice-100 px-3 py-1 rounded-lg cursor-pointer transition-all duration-200">
-                <span className="font-medium">{currentDocument?.title || 'Untitled Document'}</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-            </div>
-          </div>
+          <DocumentSelector />
           <div className="flex items-center space-x-2">
-            <span className={`text-sm font-medium ${
-              saveStatus === 'saved' ? 'text-green-600' : 
-              saveStatus === 'saving' ? 'text-blue-600' : 
-              'text-red-600'
-            }`}>
-              {saveStatus === 'saved' ? 'Saved' : 
-               saveStatus === 'saving' ? 'Saving...' : 
-               'Error saving'}
-            </span>
+            {saveStatus === 'saving' ? (
+              <svg className="animate-spin h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : saveStatus === 'saved' ? (
+              <span className="text-sm font-medium text-green-600">Saved</span>
+            ) : (
+              <span className="text-sm font-medium text-red-600">Error saving</span>
+            )}
           </div>
         </div>
       </div>
@@ -196,7 +231,37 @@ export function EditorPage() {
         <div className="flex-1 flex flex-col bg-white">
           <div className="flex-1 p-8 overflow-y-auto">
             <div className="max-w-4xl mx-auto">
-              <TextEditor content={currentDocument?.content || ''} onChange={handleContentChange} />
+              {currentDocument ? (
+                <TextEditor content={currentDocument.content || ''} onChange={handleContentChange} />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <div className="mb-8">
+                    <svg className="w-24 h-24 mx-auto text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-2xl font-semibold text-slate-700 mb-2">
+                    {documents.length === 0 ? 'Welcome to WordWise AI' : 'Select a Document'}
+                  </h2>
+                  <p className="text-slate-500 mb-6 max-w-md">
+                    {documents.length === 0 
+                      ? 'Start creating amazing marketing copy with AI-powered suggestions.'
+                      : 'Choose a document from the dropdown above or create a new one.'}
+                  </p>
+                  <button
+                    onClick={() => {
+                      const { createNewDocument } = useDocumentStore.getState()
+                      createNewDocument()
+                    }}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Create New Document
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -1,10 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { LoginPage } from './pages/LoginPage'
 import { SignupPage } from './pages/SignupPage'
+import { DocumentsPage } from './pages/DocumentsPage'
 import { EditorPage } from './pages/EditorPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { ProtectedRoute } from './components/common/ProtectedRoute'
+import { LoadingSpinner } from './components/common/LoadingSpinner'
 import { useAuthStore } from './store/authStore'
 import { useEffect } from 'react'
 import { supabase } from './services/supabase'
@@ -18,20 +20,20 @@ function AuthRedirect() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading...</p>
+          <LoadingSpinner size="xl" />
+          <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
     )
   }
 
-  return user ? <Navigate to="/editor" replace /> : <Navigate to="/login" replace />
+  return user ? <Navigate to="/documents" replace /> : <Navigate to="/login" replace />
 }
 
 function App() {
-  const { checkUser } = useAuthStore()
+  const { checkUser, loading } = useAuthStore()
 
   useEffect(() => {
     // Check user on mount
@@ -54,11 +56,30 @@ function App() {
     }
   }, [checkUser])
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <LoadingSpinner size="xl" />
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route 
+          path="/documents" 
+          element={
+            <ProtectedRoute>
+              <DocumentsPage />
+            </ProtectedRoute>
+          } 
+        />
         <Route 
           path="/editor" 
           element={

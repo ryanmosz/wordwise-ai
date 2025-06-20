@@ -4,6 +4,7 @@ import Highlight from '@tiptap/extension-highlight'
 import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
 import { useEffect } from 'react'
+import { LoadingSpinner } from '../common/LoadingSpinner'
 
 interface TextEditorProps {
   content: string
@@ -135,17 +136,59 @@ function Toolbar({ editor }: ToolbarProps) {
       {/* Separator */}
       <div className="w-px h-6 bg-slate-300 mx-1" />
 
-      {/* Highlight */}
+      {/* Highlight - Yellow */}
       <button
-        onClick={() => editor.chain().focus().toggleHighlight().run()}
+        onClick={() => editor.chain().focus().toggleHighlight({ color: '#fde047' }).run()}
         className={`px-3 py-1.5 rounded-lg font-medium transition-all duration-200 ${
-          editor.isActive('highlight')
+          editor.isActive('highlight', { color: '#fde047' })
             ? 'bg-slate-900 text-white'
             : 'text-slate-600 hover:text-slate-900 hover:bg-ice-100'
         }`}
-        title="Highlight"
+        title="Highlight Yellow"
       >
-        <span className="bg-yellow-300 px-1">H</span>
+        <span className="bg-yellow-300 px-1 rounded">H</span>
+      </button>
+
+      {/* Highlight - Red */}
+      <button
+        onClick={() => editor.chain().focus().toggleHighlight({ color: '#fca5a5' }).run()}
+        className={`px-3 py-1.5 rounded-lg font-medium transition-all duration-200 ${
+          editor.isActive('highlight', { color: '#fca5a5' })
+            ? 'bg-slate-900 text-white'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-ice-100'
+        }`}
+        title="Highlight Red"
+      >
+        <span className="bg-red-300 px-1 rounded">H</span>
+      </button>
+
+      {/* Highlight - Blue */}
+      <button
+        onClick={() => editor.chain().focus().toggleHighlight({ color: '#93c5fd' }).run()}
+        className={`px-3 py-1.5 rounded-lg font-medium transition-all duration-200 ${
+          editor.isActive('highlight', { color: '#93c5fd' })
+            ? 'bg-slate-900 text-white'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-ice-100'
+        }`}
+        title="Highlight Blue"
+      >
+        <span className="bg-blue-300 px-1 rounded">H</span>
+      </button>
+
+      {/* Clear Highlight */}
+      <button
+        onClick={() => editor.chain().focus().unsetHighlight().run()}
+        disabled={!editor.isActive('highlight') || editor.state.selection.empty}
+        className={`px-3 py-1.5 rounded-lg font-medium transition-all duration-200 ${
+          !editor.isActive('highlight') || editor.state.selection.empty
+            ? 'text-slate-400 cursor-not-allowed'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-ice-100'
+        }`}
+        title="Remove Highlight"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
       </button>
     </div>
   )
@@ -185,7 +228,10 @@ export function TextEditor({ content, onChange }: TextEditorProps) {
   if (!editor) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-slate-400">Loading editor...</div>
+        <div className="text-center">
+          <LoadingSpinner size="xl" />
+          <p className="mt-4 text-slate-600">Loading editor...</p>
+        </div>
       </div>
     )
   }

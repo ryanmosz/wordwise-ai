@@ -22,7 +22,7 @@ export function DashboardPage() {
           <h1 className="text-xl font-bold text-slate-800">WordWise AI - Analytics</h1>
           <div className="flex items-center space-x-4">
             <button
-              onClick={() => navigate('/editor')}
+              onClick={() => navigate('/documents')}
               className="px-4 py-2 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all duration-200 font-medium"
             >
               Editor

@@ -15,7 +15,7 @@ export function LoginPage() {
     setError('')
     try {
       await signIn(data.email, data.password)
-      navigate('/editor')
+      navigate('/documents')
     } catch (err: any) {
       setError(err.message || 'Login failed')
       throw err // Re-throw so AuthForm can handle loading state

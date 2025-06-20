@@ -156,14 +156,26 @@ docker-compose up
   - [x] UTC.9 Verify template repository is accessible and complete
   - [x] UTC.10 Document any immediate improvements for next time in TEMPLATE_IMPROVEMENTS.md
 
-- [ ] 5.0 Document Editor Interface
+- [x] 5.0 Document Editor Interface / User Interface
   - [x] 5.1 Install TipTap editor dependencies
   - [x] 5.2 Create EditorPage layout component
   - [x] 5.3 Implement TextEditor with TipTap
   - [x] 5.4 Create document store with Zustand
   - [x] 5.5 Implement auto-save functionality
-  - [ ] 5.6 Add document management dropdown
-  - [ ] 5.7 Create word/character count display
+  - [x] 5.6 Add document management dropdown
+  - [x] 5.7 Create word/character count display
+  - [x] 5.8 Create DocumentsPage as main landing after login
+  - [x] 5.9 Implement document grid view with cards
+  - [x] 5.10 Add document search functionality
+  - [x] 5.11 Create DocumentSelector component with dropdown
+  - [x] 5.12 Fix auto-creation of empty documents issue
+  - [x] 5.13 Add sample document for new users
+  - [x] 5.14 Create DocumentTitle inline editing component
+  - [x] 5.15 Add multiple highlight colors (yellow, red, blue)
+  - [x] 5.16 Create clear highlight button
+  - [x] 5.17 Add "Back to Documents" navigation
+  - [x] 5.18 Implement proper empty states for documents
+  - [x] 5.19 Add inline rename functionality to DocumentsPage
 
 - [ ] 6.0 AI Edge Function Development
   - [ ] 6.1 Install and configure Supabase CLI
