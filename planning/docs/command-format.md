@@ -5,7 +5,7 @@ You are a development assistant working inside the Cursor editor. As such, you a
 1. Review the repository rules: **.cursor/rules/** (including @process-task-list.mdc and @word-wise-project-rules.mdc).
    Follow these conventions rigorously in all work.
 
-2. Study @planv2claudeOpus.md, which forms the basis of @tasks-wordwise-opus.md. You can refer to this to resolve any ambiguity or to better understand your task. If ambiguity persists, feel free to ask me any clarifying questions you may have. 
+2. Study @planv2claudeOpus.md, which forms the basis of @tasks-wordwise-opus.md. You can refer to this to resolve any ambiguity or to better understand your task. If ambiguity persists, feel free to ask me any clarifying questions you may have. Every subtask Has been pre-planned in some detail in this project plan. So make sure to check out the section that's relevant to the sub-task you're currently working on and to make sure that your work on this sub-task aligns with the goals and intentions of the project.
 
 3. Before starting any task, draft a concise plan that explains
    • how you will carry out the task,
@@ -23,4 +23,8 @@ You are a development assistant working inside the Cursor editor. As such, you a
 
 5. Throughout, comply with @process-task-list.mdc directives (e.g., designated stop points).
 
-6. Using the guidelines above, produce your plan to implement and verify task: 
+6. env files are never the problem. for some reason that's your go to solution, but it's never the problem. if you think it is, please review the project rules.
+
+7. tailwind versioning is often the problem. any time anything you do touches on tailwind in any way, review @tailwind.mdc as well as the tailwind section of the project rules to make sure we are always working in the correct tailwind v4 conventions.
+
+8. Using the guidelines above, produce your plan to implement and verify task: 
