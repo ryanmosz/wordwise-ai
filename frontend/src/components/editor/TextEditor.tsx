@@ -3,12 +3,16 @@ import StarterKit from '@tiptap/starter-kit'
 import Highlight from '@tiptap/extension-highlight'
 import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
-import { useEffect } from 'react'
+import { useEffect, forwardRef, useImperativeHandle } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 
 interface TextEditorProps {
   content: string
   onChange: (content: string) => void
+}
+
+export interface TextEditorRef {
+  getSelectedText: () => string
 }
 
 interface ToolbarProps {
@@ -194,7 +198,7 @@ function Toolbar({ editor }: ToolbarProps) {
   )
 }
 
-export function TextEditor({ content, onChange }: TextEditorProps) {
+export const TextEditor = forwardRef<TextEditorRef, TextEditorProps>(({ content, onChange }, ref) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -217,6 +221,21 @@ export function TextEditor({ content, onChange }: TextEditorProps) {
       },
     },
   })
+
+  // Expose methods to parent component
+  useImperativeHandle(ref, () => ({
+    getSelectedText: () => {
+      if (!editor) return ''
+      
+      const { from, to } = editor.state.selection
+      const selectedText = editor.state.doc.textBetween(from, to)
+      
+      console.log('[TextEditor] Selected text:', selectedText)
+      console.log('[TextEditor] Selection range:', { from, to })
+      
+      return selectedText
+    }
+  }), [editor])
 
   // Update editor content when prop changes
   useEffect(() => {
@@ -244,4 +263,4 @@ export function TextEditor({ content, onChange }: TextEditorProps) {
       </div>
     </div>
   )
-} 
+}) 

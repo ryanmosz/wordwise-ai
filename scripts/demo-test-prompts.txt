@@ -1,0 +1,21 @@
+# Demo Test Prompts for WordWise AI
+
+## Test Prompt 1: Grammar and Tone Issues
+This are a great product for marketing professionals. We provides the best solutions.
+
+## Test Prompt 2: Marketing Copy with Multiple Issues
+Our product is very unique and we think you will really like it alot. Buy it now because its the best thing ever!!!
+
+## Test Prompt 3: Professional Email
+Hey there! Just wanted to touch base about the project. Its going good but we need more time. Let me know what u think.
+
+## Test Prompt 4: Product Description
+This software are revolutionary. It help businesses to be more productive and efficient. With our solution, companys can achieve there goals faster then ever before.
+
+## Expected Improvements:
+- Grammar corrections (are → is, provides → provide, etc.)
+- Tone adjustments for brand voice
+- More persuasive language
+- Improved conciseness
+- Professional vocabulary
+- The complete rewrite section will show all improvements combined 

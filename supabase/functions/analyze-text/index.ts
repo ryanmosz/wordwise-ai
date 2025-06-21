@@ -194,14 +194,13 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: buildSystemPrompt(userSettings) },
           { role: 'user', content: buildUserPrompt(text) }
         ],
         temperature: 0.3,
-        max_tokens: 1500,
-        response_format: { type: "json_object" }
+        max_tokens: 1500
       }),
     })
 

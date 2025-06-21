@@ -187,6 +187,22 @@ docker-compose up
   - [x] 6.7 Deploy edge function to Supabase
 
 - [ ] UNPLANNED - PREPARE DEMO
+  - [x] DEMO.1 Create minimal AI service to call edge function
+  - [x] DEMO.2 Add "Analyze with AI" button to editor toolbar
+  - [x] DEMO.3 Implement text selection and analysis flow
+  - [x] DEMO.4 Display raw suggestions in sidebar
+  - [x] DEMO.5 Add loading state during analysis
+  - [x] DEMO.5.1 Add complete rewrite with second AI pass
+  - [x] DEMO.5.2 Fix complete rewrite with parallel API calls
+  - [ ] DEMO.6 Test demo flow end-to-end
+  - [ ] DEMO.6 Deploy the demo to vercel
+  - [ ] DEMO.7 Prepare demo script and talking points
+  - [ ] DEMO.8 Perform actual Friday demo
+  - [ ] DEMO.6 Record demo. 
+  - [ ] DEMO.6 Do Twitter post for demo? 
+  - [ ] DEMO.6 Upload project code to GitHub 
+  - [ ] DEMO.9 Remove demo-specific code and revert changes
+  - [ ] DEMO.10 Document any insights from demo feedback
 
 - [ ] 7.0 Inline Suggestion UI
   - [ ] 7.1 Create SuggestionHighlight component
