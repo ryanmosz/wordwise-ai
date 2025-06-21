@@ -90,7 +90,7 @@ docker-compose up
 - `frontend/src/components/editor/SuggestionCard.tsx` - Suggestion popup component
 
 ### AI Integration
-- `supabase/functions/analyze-text/index.ts` - Edge function for AI text analysis
+- `supabase/functions/analyze-text/index.ts` - Edge function for AI text analysis with OpenAI GPT-4o integration
 - `frontend/src/services/aiService.ts` - Frontend AI service integration
 - `frontend/src/hooks/useSuggestions.ts` - Custom hook for suggestion management
 
@@ -178,13 +178,15 @@ docker-compose up
   - [x] 5.19 Add inline rename functionality to DocumentsPage
 
 - [ ] 6.0 AI Edge Function Development
-  - [ ] 6.1 Install and configure Supabase CLI
-  - [ ] 6.2 Initialize Supabase functions directory
-  - [ ] 6.3 Create analyze-text edge function
-  - [ ] 6.4 Implement OpenAI integration
-  - [ ] 6.5 Add prompt engineering logic
-  - [ ] 6.6 Configure OpenAI API key
-  - [ ] 6.7 Deploy edge function to Supabase
+  - [x] 6.1 Install and configure Supabase CLI
+  - [x] 6.2 Initialize Supabase functions directory
+  - [x] 6.3 Create analyze-text edge function
+  - [x] 6.4 Implement OpenAI integration
+  - [x] 6.5 Add prompt engineering logic
+  - [x] 6.6 Configure OpenAI API key
+  - [x] 6.7 Deploy edge function to Supabase
+
+- [ ] UNPLANNED - PREPARE DEMO
 
 - [ ] 7.0 Inline Suggestion UI
   - [ ] 7.1 Create SuggestionHighlight component
