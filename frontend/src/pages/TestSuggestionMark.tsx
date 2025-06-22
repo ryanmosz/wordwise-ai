@@ -1042,109 +1042,208 @@ export function TestSuggestionMark() {
   const testCSSVariableApproach = () => {
     addDebugMessage('🎯 TEST 8d: Testing CSS custom properties approach...')
     
-    const editor = editorRef.current?.editor
-    if (!editor) {
-      addDebugMessage('❌ No editor instance')
-      return
-    }
-    
-    // Clear and set content
-    editor.commands.clearContent()
-    editor.commands.insertContent({
-      type: 'doc',
-      content: [
-        {
-          type: 'heading',
-          attrs: { level: 2 },
-          content: [{ type: 'text', text: 'CSS Variable Test' }]
-        },
-        {
-          type: 'paragraph',
-          content: [
-            { type: 'text', text: 'This ' },
-            { 
-              type: 'text', 
-              text: 'grammar text',
-              marks: [{
-                type: 'suggestion',
-                attrs: {
-                  suggestionId: 'css-var-1',
-                  suggestionType: 'grammar'
-                }
-              }]
-            },
-            { type: 'text', text: ' needs fixing. And this ' },
-            { 
-              type: 'text', 
-              text: 'tone suggestion',
-              marks: [{
-                type: 'suggestion',
-                attrs: {
-                  suggestionId: 'css-var-2',
-                  suggestionType: 'tone'
-                }
-              }]
-            },
-            { type: 'text', text: ' could be improved. Finally, this ' },
-            { 
-              type: 'text', 
-              text: 'headline',
-              marks: [{
-                type: 'suggestion',
-                attrs: {
-                  suggestionId: 'css-var-3',
-                  suggestionType: 'headline'
-                }
-              }]
-            },
-            { type: 'text', text: ' needs work.' }
-          ]
-        }
-      ]
-    })
-    
-    // Add CSS to use custom properties
+    // Wait a bit for editor to be ready
     setTimeout(() => {
-      const style = document.createElement('style')
-      style.textContent = `
-        /* Use CSS custom properties for hover backgrounds */
-        [data-suggestion-id] {
-          --hover-opacity: 0;
-          background-color: rgba(var(--hover-rgb), var(--hover-opacity));
-          transition: background-color 0.15s ease;
-        }
-        
-        [data-suggestion-type="grammar"] { --hover-rgb: 254, 242, 242; }
-        [data-suggestion-type="tone"] { --hover-rgb: 254, 252, 232; }
-        [data-suggestion-type="headline"] { --hover-rgb: 240, 253, 244; }
-        
-        /* Activate on hover by changing the custom property */
-        [data-suggestion-id]:hover {
-          --hover-opacity: 1;
-        }
-      `
-      document.head.appendChild(style)
+      const editor = editorRef.current?.getEditor()
+      if (!editor) {
+        addDebugMessage('❌ No editor instance - make sure TextEditor ref is connected')
+        return
+      }
       
-      addDebugMessage('✅ Added CSS custom properties for hover')
+      addDebugMessage('✅ Got editor instance')
       
-      // Test the hover programmatically
+      // Clear and set content
+      editor.commands.clearContent()
+      editor.commands.insertContent({
+        type: 'doc',
+        content: [
+          {
+            type: 'heading',
+            attrs: { level: 2 },
+            content: [{ type: 'text', text: 'CSS Variable Test' }]
+          },
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'This ' },
+              { 
+                type: 'text', 
+                text: 'grammar text',
+                marks: [{
+                  type: 'suggestion',
+                  attrs: {
+                    suggestionId: 'css-var-1',
+                    suggestionType: 'grammar'
+                  }
+                }]
+              },
+              { type: 'text', text: ' needs fixing. And this ' },
+              { 
+                type: 'text', 
+                text: 'tone suggestion',
+                marks: [{
+                  type: 'suggestion',
+                  attrs: {
+                    suggestionId: 'css-var-2',
+                    suggestionType: 'tone'
+                  }
+                }]
+              },
+              { type: 'text', text: ' could be improved. Finally, this ' },
+              { 
+                type: 'text', 
+                text: 'headline',
+                marks: [{
+                  type: 'suggestion',
+                  attrs: {
+                    suggestionId: 'css-var-3',
+                    suggestionType: 'headline'
+                  }
+                }]
+              },
+              { type: 'text', text: ' needs work.' }
+            ]
+          }
+        ]
+      })
+      
+      // Add CSS to use custom properties
       setTimeout(() => {
-        const elements = document.querySelectorAll('[data-suggestion-id]')
-        addDebugMessage(`\n🔍 Found ${elements.length} suggestion elements`)
+        const style = document.createElement('style')
+        style.textContent = `
+          /* Use CSS custom properties for hover backgrounds */
+          [data-suggestion-id] {
+            --hover-opacity: 0;
+            background-color: rgba(var(--hover-rgb), var(--hover-opacity));
+            transition: background-color 0.15s ease;
+          }
+          
+          [data-suggestion-type="grammar"] { --hover-rgb: 254, 242, 242; }
+          [data-suggestion-type="tone"] { --hover-rgb: 254, 252, 232; }
+          [data-suggestion-type="headline"] { --hover-rgb: 240, 253, 244; }
+          
+          /* Activate on hover by changing the custom property */
+          [data-suggestion-id]:hover {
+            --hover-opacity: 1;
+          }
+        `
+        document.head.appendChild(style)
+        
+        addDebugMessage('✅ Added CSS custom properties for hover')
+        
+        // Test the hover programmatically
+        setTimeout(() => {
+          const elements = document.querySelectorAll('[data-suggestion-id]')
+          addDebugMessage(`\n🔍 Found ${elements.length} suggestion elements`)
+          
+          elements.forEach((el) => {
+            const htmlEl = el as HTMLElement
+            const id = htmlEl.getAttribute('data-suggestion-id')
+            const type = htmlEl.getAttribute('data-suggestion-type')
+            
+            // Set the custom property instead of class/style
+            htmlEl.style.setProperty('--hover-opacity', '1')
+            
+            const computed = window.getComputedStyle(htmlEl)
+            addDebugMessage(`  ${type} (${id}): bg = ${computed.backgroundColor}`)
+          })
+          
+          addDebugMessage('\n✅ CSS variable approach test complete')
+        }, 100)
+      }, 100)
+    }, 200) // Wait 200ms for editor to be ready
+  }
+
+  // Test 8e: Data attribute approach (no class changes)
+  const testDataAttributeApproach = () => {
+    addDebugMessage('🎯 TEST 8e: Testing data attribute approach (no class changes)...')
+    
+    // Set content with suggestions already in place
+    const testContent = `
+      <h2>Test 8e: Data Attribute Approach</h2>
+      <p>
+        <span class="suggestion suggestion-grammar" data-suggestion-id="data-1" data-suggestion-type="grammar" data-hover="false">Grammar suggestion (red)</span> | 
+        <span class="suggestion suggestion-tone" data-suggestion-id="data-2" data-suggestion-type="tone" data-hover="false">Tone suggestion (yellow)</span> | 
+        <span class="suggestion suggestion-headline" data-suggestion-id="data-3" data-suggestion-type="headline" data-hover="false">Headline suggestion (green)</span>
+      </p>
+    `
+    
+    setContent(testContent)
+    
+    // Add CSS that uses data attributes instead of classes
+    setTimeout(() => {
+      const styleId = 'data-attribute-hover-styles'
+      let style = document.getElementById(styleId) as HTMLStyleElement
+      
+      if (!style) {
+        style = document.createElement('style')
+        style.id = styleId
+        style.textContent = `
+          /* Base styles for suggestions */
+          [data-hover="false"] {
+            background-color: transparent;
+            transition: background-color 0.15s ease;
+          }
+          
+          /* Hover styles based on data attributes */
+          [data-suggestion-type="grammar"][data-hover="true"] {
+            background-color: rgb(254, 242, 242) !important;
+          }
+          
+          [data-suggestion-type="tone"][data-hover="true"] {
+            background-color: rgb(254, 252, 232) !important;
+          }
+          
+          [data-suggestion-type="headline"][data-hover="true"] {
+            background-color: rgb(240, 253, 244) !important;
+          }
+        `
+        document.head.appendChild(style)
+        addDebugMessage('✅ Added data attribute CSS')
+      }
+      
+      // Set up hover handlers that only change data attributes
+      const elements = document.querySelectorAll('[data-suggestion-id]')
+      addDebugMessage(`\n🔍 Found ${elements.length} suggestion elements`)
+      
+      elements.forEach((el) => {
+        const htmlEl = el as HTMLElement
+        const type = htmlEl.getAttribute('data-suggestion-type')
+        
+        // Remove any existing listeners
+        htmlEl.onmouseenter = null
+        htmlEl.onmouseleave = null
+        
+        // Add new listeners that only change data attributes
+        htmlEl.onmouseenter = () => {
+          htmlEl.setAttribute('data-hover', 'true')
+          const computed = window.getComputedStyle(htmlEl)
+          addDebugMessage(`  HOVER START on ${type}: bg = ${computed.backgroundColor}`)
+        }
+        
+        htmlEl.onmouseleave = () => {
+          htmlEl.setAttribute('data-hover', 'false')
+          addDebugMessage(`  HOVER END on ${type}`)
+        }
+      })
+      
+      // Test programmatically
+      setTimeout(() => {
+        addDebugMessage('\n🧪 Testing programmatic hover...')
         
         elements.forEach((el) => {
           const htmlEl = el as HTMLElement
-          const id = htmlEl.getAttribute('data-suggestion-id')
           const type = htmlEl.getAttribute('data-suggestion-type')
           
-          // Set the custom property instead of class/style
-          htmlEl.style.setProperty('--hover-opacity', '1')
+          // Simulate hover by changing data attribute
+          htmlEl.setAttribute('data-hover', 'true')
           
+          // Check computed style
           const computed = window.getComputedStyle(htmlEl)
-          addDebugMessage(`  ${type} (${id}): bg = ${computed.backgroundColor}`)
+          addDebugMessage(`  ${type}: bg = ${computed.backgroundColor}`)
         })
         
-        addDebugMessage('\n✅ CSS variable approach test complete')
+        addDebugMessage('\n✅ Data attribute approach test complete')
       }, 100)
     }, 100)
   }
@@ -1468,6 +1567,12 @@ export function TestSuggestionMark() {
                   className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-left"
                 >
                   Test 8d: CSS Custom Properties
+                </button>
+                <button
+                  onClick={testDataAttributeApproach}
+                  className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-left"
+                >
+                  Test 8e: Data Attribute Approach
                 </button>
                 <div className="border-t pt-3 mt-3 space-y-2">
                   <button
