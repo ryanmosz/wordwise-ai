@@ -93,8 +93,9 @@ docker-compose up
 
 ### AI Integration
 - `supabase/functions/analyze-text/index.ts` - Edge function for AI text analysis with OpenAI GPT-4o integration
-- `frontend/src/services/aiService.ts` - Frontend AI service integration (to be implemented)
-- `frontend/src/hooks/useSuggestions.ts` - Custom hook for suggestion management with debouncing and state handling
+- `frontend/src/services/aiService.ts` - Frontend AI service with Supabase edge function integration, error handling, and request cancellation
+- `frontend/src/hooks/useSuggestions.ts` - Custom hook for suggestion management with debouncing and state handling (now using real AI service)
+- `frontend/src/pages/TestAIService.tsx` - Test page for verifying AI service integration
 - `frontend/src/hooks/useSuggestions.test.ts` - Unit tests for useSuggestions hook
 - `frontend/src/pages/TestUseSuggestions.tsx` - Test page for useSuggestions hook functionality
 - `frontend/scripts/test-use-suggestions.sh` - W3M test script for automated hook testing
@@ -205,7 +206,7 @@ docker-compose up
   - [x] 7.7 Add accept/reject functionality
 
 - [ ] 8.0 Frontend-Backend Integration
-  - [ ] 8.1 Create AI service module
+  - [x] 8.1 Create AI service module
   - [ ] 8.2 Implement debounced text analysis
   - [ ] 8.3 Add loading states to editor
   - [ ] 8.4 Implement error handling

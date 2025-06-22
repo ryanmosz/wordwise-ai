@@ -13,6 +13,7 @@ import { TestUseSuggestions } from './pages/TestUseSuggestions'
 import { TestUseSuggestionsEnhanced } from './pages/TestUseSuggestionsEnhanced'
 import TestSuggestionStateManagement from './pages/TestSuggestionStateManagement'
 import { TestAcceptReject } from './pages/TestAcceptReject'
+import { TestAIService } from './pages/TestAIService'
 import { ProtectedRoute } from './components/common/ProtectedRoute'
 import { LoadingSpinner } from './components/common/LoadingSpinner'
 import { useAuthStore } from './store/authStore'
@@ -88,6 +89,7 @@ function App() {
         <Route path="/test-use-suggestions-enhanced" element={<TestUseSuggestionsEnhanced />} />
         <Route path="/test-suggestion-state" element={<TestSuggestionStateManagement />} />
         <Route path="/test-accept-reject" element={<TestAcceptReject />} />
+        <Route path="/test-ai-service" element={<TestAIService />} />
         <Route 
           path="/documents" 
           element={

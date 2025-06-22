@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { debounce } from '../utils/debounce'
 import type { Suggestion, SuggestionType } from '../types/suggestion'
 import { useDocumentStore } from '../store/documentStore'
+import { aiService } from '../services/aiService'
 
 interface UseSuggestionsOptions {
   text: string
@@ -30,63 +31,6 @@ interface DebugInfo {
   rejectedSuggestions: number
   lastFetchTime: string | null
   isDebugMode: boolean
-}
-
-// Temporary mock function until aiService is implemented in Task 8.1
-const mockAnalyzeText = async (text: string, documentId: string, userSettings: any): Promise<{ suggestions: Suggestion[] }> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 800))
-  
-  // Generate mock suggestions based on text
-  const mockSuggestions: Suggestion[] = []
-  
-  // Mock grammar suggestion
-  if (text.toLowerCase().includes('this are')) {
-    mockSuggestions.push({
-      id: 'mock-1',
-      startIndex: text.toLowerCase().indexOf('this are'),
-      endIndex: text.toLowerCase().indexOf('this are') + 8,
-      type: 'grammar',
-      originalText: 'This are',
-      suggestionText: 'These are',
-      explanation: 'Subject-verb agreement: use "These" with plural "are"',
-      confidence: 0.95,
-      accepted: null
-    })
-  }
-  
-  // Mock tone suggestion
-  if (text.toLowerCase().includes('hey') && userSettings?.brandTone === 'professional') {
-    mockSuggestions.push({
-      id: 'mock-2',
-      startIndex: text.toLowerCase().indexOf('hey'),
-      endIndex: text.toLowerCase().indexOf('hey') + 3,
-      type: 'tone',
-      originalText: 'Hey',
-      suggestionText: 'Hello',
-      explanation: 'More professional greeting for brand voice',
-      confidence: 0.85,
-      accepted: null
-    })
-  }
-  
-  // Mock persuasive suggestion
-  if (text.toLowerCase().includes('good')) {
-    const index = text.toLowerCase().indexOf('good')
-    mockSuggestions.push({
-      id: 'mock-3',
-      startIndex: index,
-      endIndex: index + 4,
-      type: 'persuasive',
-      originalText: 'good',
-      suggestionText: 'exceptional',
-      explanation: 'Stronger, more persuasive language',
-      confidence: 0.75,
-      accepted: null
-    })
-  }
-  
-  return { suggestions: mockSuggestions }
 }
 
 export function useSuggestions({ 
@@ -140,16 +84,27 @@ export function useSuggestions({
       try {
         console.log('[useSuggestions] Starting analysis for text length:', text.length)
         
-        // TODO: Replace with actual aiService.analyzeText when implemented
-        const result = await mockAnalyzeText(text, documentId, userSettings)
+        // Use the real AI service
+        const result = await aiService.analyzeText({
+          text,
+          documentId,
+          userSettings
+        })
         
         // Only update if this is still the latest request
         if (requestId === requestRef.current) {
           // Clear existing suggestions and add new ones
           clearSuggestions()
-          addSuggestions(result.suggestions)
+          
+          // Add unique IDs to suggestions if they don't have them
+          const suggestionsWithIds = result.suggestions.map((suggestion, index) => ({
+            ...suggestion,
+            id: suggestion.id || `suggestion-${Date.now()}-${index}`
+          }))
+          
+          addSuggestions(suggestionsWithIds)
           lastFetchTimeRef.current = new Date().toISOString()
-          console.log('[useSuggestions] Analysis complete, suggestions:', result.suggestions.length)
+          console.log('[useSuggestions] Analysis complete, suggestions:', suggestionsWithIds.length)
         }
       } catch (err) {
         // Only show error for latest request
@@ -179,7 +134,8 @@ export function useSuggestions({
     // Cleanup function to cancel pending analysis
     return () => {
       analyzeText.cancel()
-      // Note: When aiService is implemented, also cancel the API request here
+      // Cancel any pending API request
+      aiService.cancelAnalysis()
     }
   }, [text, analyzeText, enabled])
   
