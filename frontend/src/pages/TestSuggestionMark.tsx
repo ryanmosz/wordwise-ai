@@ -407,8 +407,8 @@ export function TestSuggestionMark() {
           addDebugMessage('❌ Could not find tone text')
         }
         
-        // CRITICAL: Clear selection after applying all marks (like Test 5 does)
-        editor.commands.setTextSelection(editor.state.doc.content.size)
+        // CRITICAL: Clear selection after applying all marks
+        editor.commands.setTextSelection(0)
         addDebugMessage('🧹 Cleared text selection after applying marks')
         
         // Force a re-render by blurring and refocusing
@@ -416,52 +416,53 @@ export function TestSuggestionMark() {
         setTimeout(() => {
           editor.commands.focus()
           addDebugMessage('🔄 Forced re-render by blur/focus cycle')
+          
+          // Inspect the result
+          setTimeout(() => {
+            addDebugMessage('\n🔍 Checking applied marks...')
+            inspectCurrentDOM()
+            
+            // Special check for all suggestions with focus on position
+            addDebugMessage('\n🎯 SPECIAL CHECK - POSITION ANALYSIS:')
+            const editor = document.querySelector('.ProseMirror')
+            if (editor) {
+              const allSuggestions = editor.querySelectorAll('[data-suggestion-id]')
+              addDebugMessage(`  Total suggestions: ${allSuggestions.length}`)
+              
+              // Find the last suggestion in the document
+              let lastSuggestion: Element | null = null
+              let maxOffset = -1
+              
+              allSuggestions.forEach((el) => {
+                const rect = el.getBoundingClientRect()
+                const editorRect = editor.getBoundingClientRect()
+                const relativeOffset = rect.left - editorRect.left + rect.top - editorRect.top
+                
+                if (relativeOffset > maxOffset) {
+                  maxOffset = relativeOffset
+                  lastSuggestion = el
+                }
+              })
+              
+              addDebugMessage('\n  📍 SUGGESTION ORDER AND STYLES:')
+              allSuggestions.forEach((el, i) => {
+                const htmlEl = el as HTMLElement
+                const computedStyle = window.getComputedStyle(htmlEl)
+                const type = htmlEl.getAttribute('data-suggestion-type')
+                const isLast = el === lastSuggestion
+                
+                addDebugMessage(`\n  ${i + 1}. ${type?.toUpperCase()} suggestion ("${htmlEl.textContent}"):`)
+                addDebugMessage(`    Background: ${computedStyle.backgroundColor}`)
+                addDebugMessage(`    Underline: ${computedStyle.textDecorationColor}`)
+                addDebugMessage(`    Classes: ${htmlEl.className}`)
+                if (isLast) {
+                  addDebugMessage(`    ⚠️  THIS IS THE LAST SUGGESTION IN THE LINE`)
+                }
+              })
+            }
+          }, 100)
         }, 50)
-        
-        // Inspect the result
-      setTimeout(() => {
-        addDebugMessage('\n🔍 Checking applied marks...')
-        inspectCurrentDOM()
-        
-        // Special check for all suggestions with focus on position
-        addDebugMessage('\n🎯 SPECIAL CHECK - POSITION ANALYSIS:')
-        const editor = document.querySelector('.ProseMirror')
-        if (editor) {
-          const allSuggestions = editor.querySelectorAll('[data-suggestion-id]')
-          addDebugMessage(`  Total suggestions: ${allSuggestions.length}`)
-          
-          // Find the last suggestion in the document
-          let lastSuggestion: Element | null = null
-          let maxOffset = -1
-          
-          allSuggestions.forEach((el) => {
-            const rect = el.getBoundingClientRect()
-            const editorRect = editor.getBoundingClientRect()
-            const relativeOffset = rect.left - editorRect.left + rect.top - editorRect.top
-            
-            if (relativeOffset > maxOffset) {
-              maxOffset = relativeOffset
-              lastSuggestion = el
-            }
-          })
-          
-          addDebugMessage('\n  📍 SUGGESTION ORDER AND STYLES:')
-          allSuggestions.forEach((el, i) => {
-            const htmlEl = el as HTMLElement
-            const computedStyle = window.getComputedStyle(htmlEl)
-            const type = htmlEl.getAttribute('data-suggestion-type')
-            const isLast = el === lastSuggestion
-            
-            addDebugMessage(`\n  ${i + 1}. ${type?.toUpperCase()} suggestion ("${htmlEl.textContent}"):`)
-            addDebugMessage(`    Background: ${computedStyle.backgroundColor}`)
-            addDebugMessage(`    Underline: ${computedStyle.textDecorationColor}`)
-            addDebugMessage(`    Classes: ${htmlEl.className}`)
-            if (isLast) {
-              addDebugMessage(`    ⚠️  THIS IS THE LAST SUGGESTION IN THE LINE`)
-            }
-          })
-        }
-      }, 100)
+      }, 500)
     }, 500)
   }
 
@@ -630,9 +631,9 @@ export function TestSuggestionMark() {
   const testPreciseSelection = () => {
     addDebugMessage('🎯 TEST 8: Testing precise text selection with proper positions...')
     
-    // DIAGNOSTIC: Moving tone (yellow) to the END to see if position matters
-    // Set content with formatting - tone is now last
-    const content = `<h2>Precise Selection Test</h2><p>This text has <strong>bold words</strong> that need grammar fixes.</p><p>This <strong><em>bold italic</em></strong> headline needs complete rework!</p><p>The <em>italic tone</em> could be improved significantly.</p>`
+    // DIAGNOSTIC: Changed order - putting grammar (red) last to see if it's position-dependent
+    // Set content with formatting
+    const content = `<h2>Precise Selection Test</h2><p>The <em>italic tone</em> could be improved significantly.</p><p>This <strong><em>bold italic</em></strong> headline needs complete rework!</p><p>This text has <strong>bold words</strong> that need grammar fixes.</p>`
     setContent(content)
     
     setTimeout(() => {
@@ -644,75 +645,60 @@ export function TestSuggestionMark() {
       
       addDebugMessage('✅ Got editor instance')
       
-      // Get the full text content to find positions
+      // Get the full text to find positions
       const fullText = editor.state.doc.textContent
       addDebugMessage(`📄 Full document text: "${fullText}"`)
       
-      // Test 1: Grammar mark FIRST - "text has bold words that need grammar fixes"
-      const grammarText = 'text has bold words that need grammar fixes'
-      const grammarStart = fullText.indexOf(grammarText)
-      if (grammarStart !== -1) {
-        const from = grammarStart + 1 // +1 because ProseMirror positions are 1-based
-        const to = from + grammarText.length
-        
-        addDebugMessage(`📍 Applying grammar mark (FIRST) from ${from} to ${to}`)
-        
-        editor.chain()
-          .focus()
-          .setTextSelection({ from, to })
-          .setMark('suggestion', {
-            suggestionId: 'precise-1',
-            suggestionType: 'grammar'
-          })
-          .run()
-      } else {
-        addDebugMessage('❌ Could not find grammar text in full text')
-      }
+      // Find text positions - adjusted for new order
+      const toneStart = fullText.indexOf('The italic tone could be improved significantly.')
+      const headlineStart = fullText.indexOf('This bold italic headline needs complete rework!')
+      const grammarStart = fullText.indexOf('text has bold words that need grammar fixes.')
       
-      // Test 2: Mark the headline - "This bold italic headline needs complete rework!"
-      const headlineText = 'This bold italic headline needs complete rework!'
-      const headlineStart = fullText.indexOf(headlineText)
-      if (headlineStart !== -1) {
-        const from = headlineStart + 1
-        const to = from + headlineText.length
-        
-        addDebugMessage(`📍 Applying headline mark from ${from} to ${to}`)
-        
-        editor.chain()
-          .focus()
-          .setTextSelection({ from, to })
-          .setMark('suggestion', {
-            suggestionId: 'precise-3',
-            suggestionType: 'headline'
-          })
-          .run()
-      } else {
-        addDebugMessage('❌ Could not find headline text in full text')
-      }
-      
-      // Test 3: Mark across italic text - "The italic tone could be improved significantly" (NOW LAST)
-      const toneText = 'The italic tone could be improved significantly'
-      const toneStart = fullText.indexOf(toneText)
+      // Apply marks in new order
+      // Tone (yellow) - now FIRST
       if (toneStart !== -1) {
-        const from = toneStart + 1
-        const to = from + toneText.length
-        
-        addDebugMessage(`📍 Applying tone mark (NOW LAST) from ${from} to ${to}`)
-        
+        const from = toneStart + 1 // ProseMirror uses 1-based positions
+        const to = from + 47 // Length of the text
+        addDebugMessage(`📍 Applying tone mark (NOW FIRST) from ${from} to ${to}`)
         editor.chain()
-          .focus()
           .setTextSelection({ from, to })
-          .setMark('suggestion', {
-            suggestionId: 'precise-2',
+          .setMark('suggestion', { 
+            suggestionId: 'precise-2', 
             suggestionType: 'tone'
           })
           .run()
-      } else {
-        addDebugMessage('❌ Could not find tone text in full text')
+      }
+      
+      // Headline (green) - still MIDDLE
+      if (headlineStart !== -1) {
+        const from = headlineStart + 1
+        const to = from + 48
+        addDebugMessage(`📍 Applying headline mark from ${from} to ${to}`)
+        editor.chain()
+          .setTextSelection({ from, to })
+          .setMark('suggestion', { 
+            suggestionId: 'precise-3', 
+            suggestionType: 'headline'
+          })
+          .run()
+      }
+      
+      // Grammar (red) - now LAST
+      if (grammarStart !== -1) {
+        const from = grammarStart + 1
+        const to = from + 43
+        addDebugMessage(`📍 Applying grammar mark (NOW LAST) from ${from} to ${to}`)
+        editor.chain()
+          .setTextSelection({ from, to })
+          .setMark('suggestion', { 
+            suggestionId: 'precise-1', 
+            suggestionType: 'grammar'
+          })
+          .run()
       }
       
       // CRITICAL: Clear selection after applying all marks
-      editor.commands.setTextSelection(editor.state.doc.content.size)
+      editor.commands.setTextSelection(0)
       addDebugMessage('🧹 Cleared text selection after applying marks')
       
       // Force a re-render by blurring and refocusing
@@ -725,73 +711,177 @@ export function TestSuggestionMark() {
         setTimeout(() => {
           addDebugMessage('\n🧪 Testing hover functionality on each type:')
           
-          // Test grammar hover (now FIRST)
-          const grammarEl = document.querySelector('[data-suggestion-id="precise-1"]') as HTMLElement
-          if (grammarEl) {
-            addDebugMessage('  Testing GRAMMAR (red) hover - FIRST position...')
-            grammarEl.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+          // Test tone hover (now FIRST)
+          const toneEl = document.querySelector('[data-suggestion-id="precise-2"]') as HTMLElement
+          if (toneEl) {
+            addDebugMessage('  Testing TONE (yellow) hover - FIRST position...')
+            
+            // More detailed logging
+            const beforeHover = {
+              classes: toneEl.className,
+              inlineStyle: toneEl.style.backgroundColor,
+              computedBg: window.getComputedStyle(toneEl).backgroundColor,
+              display: window.getComputedStyle(toneEl).display,
+              visibility: window.getComputedStyle(toneEl).visibility
+            }
+            addDebugMessage(`    Before hover: ${JSON.stringify(beforeHover)}`)
+            
+            toneEl.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+            
             setTimeout(() => {
-              const bgColor = window.getComputedStyle(grammarEl).backgroundColor
-              addDebugMessage(`    Grammar background after hover: ${bgColor}`)
-              grammarEl.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }))
+              const afterHover = {
+                classes: toneEl.className,
+                inlineStyle: toneEl.style.backgroundColor,
+                computedBg: window.getComputedStyle(toneEl).backgroundColor,
+                display: window.getComputedStyle(toneEl).display,
+                visibility: window.getComputedStyle(toneEl).visibility
+              }
+              addDebugMessage(`    After hover: ${JSON.stringify(afterHover)}`)
+              
+              // Check if the element is actually visible in the viewport
+              const rect = toneEl.getBoundingClientRect()
+              addDebugMessage(`    Element position: top=${rect.top}, left=${rect.left}, width=${rect.width}, height=${rect.height}`)
+              
+              toneEl.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }))
             }, 50)
           }
           
-          // Test headline hover (MIDDLE)
+          // Test headline hover (still MIDDLE)
           setTimeout(() => {
             const headlineEls = document.querySelectorAll('[data-suggestion-id="precise-3"]')
             addDebugMessage(`  Found ${headlineEls.length} headline elements`)
             
-            if (headlineEls.length > 0) {
+            const headlineEl = headlineEls[0] as HTMLElement
+            if (headlineEl) {
               addDebugMessage('  Testing HEADLINE (green) hover - MIDDLE position...')
-              const firstHeadline = headlineEls[0] as HTMLElement
               
-              // Log initial state
-              addDebugMessage(`    Initial classes: ${firstHeadline.className}`)
-              addDebugMessage(`    Initial inline style: ${firstHeadline.style.backgroundColor}`)
+              // More detailed logging
+              const beforeHover = {
+                classes: headlineEl.className,
+                inlineStyle: headlineEl.style.backgroundColor,
+                computedBg: window.getComputedStyle(headlineEl).backgroundColor,
+                display: window.getComputedStyle(headlineEl).display,
+                visibility: window.getComputedStyle(headlineEl).visibility
+              }
+              addDebugMessage(`    Before hover: ${JSON.stringify(beforeHover)}`)
               
-              firstHeadline.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+              headlineEl.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
               
               setTimeout(() => {
-                // Check both computed style and inline style
-                const computedBg = window.getComputedStyle(firstHeadline).backgroundColor
-                const inlineBg = firstHeadline.style.backgroundColor
-                addDebugMessage(`    Headline computed background after hover: ${computedBg}`)
-                addDebugMessage(`    Headline inline style after hover: ${inlineBg}`)
-                addDebugMessage(`    Classes after hover: ${firstHeadline.className}`)
+                const afterHover = {
+                  classes: headlineEl.className,
+                  inlineStyle: headlineEl.style.backgroundColor,
+                  computedBg: window.getComputedStyle(headlineEl).backgroundColor,
+                  display: window.getComputedStyle(headlineEl).display,
+                  visibility: window.getComputedStyle(headlineEl).visibility
+                }
+                addDebugMessage(`    After hover: ${JSON.stringify(afterHover)}`)
                 
-                // Also check all headline elements
-                headlineEls.forEach((el, idx) => {
-                  const htmlEl = el as HTMLElement
-                  addDebugMessage(`    Element ${idx} bg: ${htmlEl.style.backgroundColor}`)
-                })
+                // Check if the element is actually visible in the viewport
+                const rect = headlineEl.getBoundingClientRect()
+                addDebugMessage(`    Element position: top=${rect.top}, left=${rect.left}, width=${rect.width}, height=${rect.height}`)
                 
-                firstHeadline.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }))
-              }, 100) // Increased timeout
+                // Check if element is still in DOM
+                if (!document.body.contains(headlineEl)) {
+                  addDebugMessage(`    ⚠️ Element is no longer in the DOM!`)
+                }
+                
+                // Check parent
+                const parent = headlineEl.parentElement
+                addDebugMessage(`    Parent: ${parent?.tagName}, classes: ${parent?.className}`)
+                
+                // Try to get fresh reference
+                const freshEl = document.querySelector('[data-suggestion-id="precise-3"]') as HTMLElement
+                if (freshEl && freshEl !== headlineEl) {
+                  addDebugMessage(`    ⚠️ Element was replaced! Fresh element bg: ${window.getComputedStyle(freshEl).backgroundColor}`)
+                }
+                
+                headlineEl.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }))
+              }, 50)
             }
           }, 150)
           
-          // Test tone hover (now LAST)
+          // Test grammar hover (now LAST)
           setTimeout(() => {
-            const toneEl = document.querySelector('[data-suggestion-id="precise-2"]') as HTMLElement
-            if (toneEl) {
-              addDebugMessage('  Testing TONE (yellow) hover - LAST position...')
-              toneEl.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+            const grammarEl = document.querySelector('[data-suggestion-id="precise-1"]') as HTMLElement
+            if (grammarEl) {
+              addDebugMessage('  Testing GRAMMAR (red) hover - LAST position...')
+              
+              // More detailed logging
+              const beforeHover = {
+                classes: grammarEl.className,
+                inlineStyle: grammarEl.style.backgroundColor,
+                computedBg: window.getComputedStyle(grammarEl).backgroundColor,
+                display: window.getComputedStyle(grammarEl).display,
+                visibility: window.getComputedStyle(grammarEl).visibility
+              }
+              addDebugMessage(`    Before hover: ${JSON.stringify(beforeHover)}`)
+              
+              grammarEl.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+              
               setTimeout(() => {
-                const bgColor = window.getComputedStyle(toneEl).backgroundColor
-                addDebugMessage(`    Tone background after hover: ${bgColor}`)
-                toneEl.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }))
+                const afterHover = {
+                  classes: grammarEl.className,
+                  inlineStyle: grammarEl.style.backgroundColor,
+                  computedBg: window.getComputedStyle(grammarEl).backgroundColor,
+                  display: window.getComputedStyle(grammarEl).display,
+                  visibility: window.getComputedStyle(grammarEl).visibility
+                }
+                addDebugMessage(`    After hover: ${JSON.stringify(afterHover)}`)
+                
+                // Check if the element is actually visible in the viewport
+                const rect = grammarEl.getBoundingClientRect()
+                addDebugMessage(`    Element position: top=${rect.top}, left=${rect.left}, width=${rect.width}, height=${rect.height}`)
+                
+                // Check if element is still in DOM
+                if (!document.body.contains(grammarEl)) {
+                  addDebugMessage(`    ⚠️ Element is no longer in the DOM!`)
+                }
+                
+                // Check parent
+                const parent = grammarEl.parentElement
+                addDebugMessage(`    Parent: ${parent?.tagName}, classes: ${parent?.className}`)
+                
+                // Try to get fresh reference
+                const freshEl = document.querySelector('[data-suggestion-id="precise-1"]') as HTMLElement
+                if (freshEl && freshEl !== grammarEl) {
+                  addDebugMessage(`    ⚠️ Element was replaced! Fresh element bg: ${window.getComputedStyle(freshEl).backgroundColor}`)
+                }
+                
+                // Check if CSS rules are loaded for grammar
+                const styleSheets = Array.from(document.styleSheets)
+                let foundHoverRules = false
+                styleSheets.forEach((sheet, i) => {
+                  try {
+                    const rules = Array.from(sheet.cssRules || [])
+                    rules.forEach(rule => {
+                      if (rule instanceof CSSStyleRule && rule.selectorText?.includes('suggestion-')) {
+                        if (!foundHoverRules) {
+                          addDebugMessage(`    Found suggestion CSS rules in sheet ${i}:`)
+                          foundHoverRules = true
+                        }
+                        if (rule.selectorText.includes('hover')) {
+                          addDebugMessage(`      HOVER: ${rule.selectorText}`)
+                        }
+                      }
+                    })
+                  } catch (e) {
+                    // Cross-origin stylesheets can't be accessed
+                  }
+                })
+                
+                grammarEl.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }))
               }, 50)
             }
           }, 300)
-        }, 200)
+        }, 500)  // Changed from 200 to 500 to give more time for render
       }, 50)
       
       // Inspect results
       setTimeout(() => {
         addDebugMessage('\n🔍 Checking precise selection results...')
         inspectCurrentDOM()
-      }, 800)
+      }, 1500)  // Changed from 800 to 1500
     }, 500)
   }
 
@@ -845,6 +935,104 @@ export function TestSuggestionMark() {
         addDebugMessage('\n🔍 Checking Test 8b results...')
         inspectCurrentDOM()
       }, 800)
+    }, 500)
+  }
+
+  // Test 8c: Manual hover test without dispatching events
+  const testManualHover = () => {
+    addDebugMessage('🎯 TEST 8c: Testing manual hover state (no events)...')
+    
+    // Set content with formatting
+    const content = `<h2>Manual Hover Test</h2><p>The <em>italic tone</em> could be improved significantly.</p><p>This <strong><em>bold italic</em></strong> headline needs complete rework!</p><p>This text has <strong>bold words</strong> that need grammar fixes.</p>`
+    setContent(content)
+    
+    setTimeout(() => {
+      const editor = editorRef.current?.getEditor()
+      if (!editor) {
+        addDebugMessage('❌ No editor instance available')
+        return
+      }
+      
+      // Apply marks
+      const fullText = editor.state.doc.textContent
+      
+      // Apply tone mark
+      const toneStart = fullText.indexOf('The italic tone could be improved significantly.')
+      if (toneStart !== -1) {
+        editor.chain()
+          .setTextSelection({ from: toneStart + 1, to: toneStart + 48 })
+          .setMark('suggestion', { suggestionId: 'manual-tone', suggestionType: 'tone' })
+          .run()
+      }
+      
+      // Apply headline mark
+      const headlineStart = fullText.indexOf('This bold italic headline needs complete rework!')
+      if (headlineStart !== -1) {
+        editor.chain()
+          .setTextSelection({ from: headlineStart + 1, to: headlineStart + 49 })
+          .setMark('suggestion', { suggestionId: 'manual-headline', suggestionType: 'headline' })
+          .run()
+      }
+      
+      // Apply grammar mark
+      const grammarStart = fullText.indexOf('text has bold words that need grammar fixes.')
+      if (grammarStart !== -1) {
+        editor.chain()
+          .setTextSelection({ from: grammarStart + 1, to: grammarStart + 44 })
+          .setMark('suggestion', { suggestionId: 'manual-grammar', suggestionType: 'grammar' })
+          .run()
+      }
+      
+      // Clear selection
+      editor.commands.setTextSelection(0)
+      
+      // Wait for render then manually add hover classes
+      setTimeout(() => {
+        addDebugMessage('\n🔧 Manually adding hover classes...')
+        
+        const toneEl = document.querySelector('[data-suggestion-id="manual-tone"]') as HTMLElement
+        const headlineEl = document.querySelector('[data-suggestion-id="manual-headline"]') as HTMLElement
+        const grammarEl = document.querySelector('[data-suggestion-id="manual-grammar"]') as HTMLElement
+        
+        if (toneEl) {
+          toneEl.classList.add('suggestion-hover')
+          toneEl.style.backgroundColor = 'rgb(254, 252, 232)'
+          addDebugMessage(`  Tone: Added hover class and inline style`)
+        }
+        
+        if (headlineEl) {
+          headlineEl.classList.add('suggestion-hover')
+          headlineEl.style.backgroundColor = 'rgb(240, 253, 244)'
+          addDebugMessage(`  Headline: Added hover class and inline style`)
+        }
+        
+        if (grammarEl) {
+          grammarEl.classList.add('suggestion-hover')
+          grammarEl.style.backgroundColor = 'rgb(254, 242, 242)'
+          addDebugMessage(`  Grammar: Added hover class and inline style`)
+        }
+        
+        // Check results
+        setTimeout(() => {
+          addDebugMessage('\n📊 Checking manual hover results:')
+          
+          [toneEl, headlineEl, grammarEl].forEach((el, i) => {
+            if (el) {
+              const type = ['Tone', 'Headline', 'Grammar'][i]
+              const computed = window.getComputedStyle(el)
+              const rect = el.getBoundingClientRect()
+              
+              addDebugMessage(`\n  ${type}:`)
+              addDebugMessage(`    Computed bg: ${computed.backgroundColor}`)
+              addDebugMessage(`    Inline style: ${el.style.backgroundColor}`)
+              addDebugMessage(`    Classes: ${el.className}`)
+              addDebugMessage(`    Position: ${rect.width > 0 ? 'VISIBLE' : 'NOT VISIBLE'}`)
+            }
+          })
+          
+          addDebugMessage('\n💡 Manual hover test complete. Check if colors are visible in the editor.')
+        }, 100)
+      }, 500)
     }, 500)
   }
 
@@ -1155,6 +1343,12 @@ export function TestSuggestionMark() {
                   className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-left"
                 >
                   Test 8b: Like Test 4 (Pre-created)
+                </button>
+                <button
+                  onClick={testManualHover}
+                  className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-left"
+                >
+                  Test 8c: Manual Hover Test
                 </button>
                 <div className="border-t pt-3 mt-3 space-y-2">
                   <button
