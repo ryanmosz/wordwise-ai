@@ -29,9 +29,9 @@ You are a development assistant working inside the Cursor editor. As such, you a
 
 7. tailwind versioning is often the problem. any time anything you do touches on tailwind in any way, review @tailwind.mdc as well as the tailwind section of the project rules to make sure we are always working in the correct tailwind v4 conventions.
 
-8. estimate a task difficulty score of 0 to 10 based on complexity of task and amount of work required. suggest whether i should do a git commit before starting on this task.
+8. estimate a task difficulty score of 0 to 10 based on complexity of task and amount of work required. 
 
-9. never do a git commit unless directed to 
+9. If the task we're working on is the first stage of a parent task, a #.1 task, for example, 5.1, Create a new feature branch off of the main git branch named for that task list parent, and fo the initial check-in on the new branch. 
 
 10. at the start of working on any task, review the handoff.mdc file, then delete its contents. once you believe a task is complete, update the handoff.mdc file describing what you just did. 
 
