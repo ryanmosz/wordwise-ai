@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { supabase } from '../services/supabase'
 import type { Document, SaveStatus } from '../types/document'
+import type { Suggestion } from '../types/suggestion'
 import { debounce } from '../utils/debounce'
 
 interface DocumentState {
@@ -8,6 +9,10 @@ interface DocumentState {
   documents: Document[]
   saveStatus: SaveStatus
   isNewDocument: boolean  // Track if current document is new/unsaved
+  
+  // Suggestion state management
+  activeSuggestions: Map<string, Suggestion>
+  suggestionStatus: Map<string, 'pending' | 'accepted' | 'rejected'>
   
   loadDocuments: () => Promise<void>
   loadDocument: (id: string) => Promise<void>
@@ -20,6 +25,12 @@ interface DocumentState {
   cleanupEmptyDocuments: () => Promise<void>
   setSaveStatus: (status: SaveStatus) => void
   hasContentOrTitle: (doc: Document | null) => boolean
+  
+  // Suggestion management methods
+  addSuggestions: (suggestions: Suggestion[]) => void
+  updateSuggestionStatus: (id: string, status: 'pending' | 'accepted' | 'rejected') => void
+  clearSuggestions: () => void
+  getSuggestionById: (id: string) => Suggestion | undefined
 }
 
 export const useDocumentStore = create<DocumentState>((set, get) => {
@@ -34,6 +45,10 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
     documents: [],
     saveStatus: 'saved',
     isNewDocument: false,
+    
+    // Suggestion state management
+    activeSuggestions: new Map(),
+    suggestionStatus: new Map(),
     
     loadDocuments: async () => {
       try {
@@ -84,6 +99,9 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
           contentLength: data.content?.length || 0,
           hasContent: !!data.content
         })
+        
+        // Clear suggestions when switching documents
+        get().clearSuggestions()
         
         set({ 
           currentDocument: data,
@@ -352,6 +370,48 @@ export const useDocumentStore = create<DocumentState>((set, get) => {
       
       // Has content if text is longer than a few characters
       return textContent.length > 5
+    },
+    
+    // Suggestion management methods
+    addSuggestions: (suggestions: Suggestion[]) => {
+      set((state) => {
+        const newActiveSuggestions = new Map(state.activeSuggestions)
+        const newSuggestionStatus = new Map(state.suggestionStatus)
+        
+        suggestions.forEach(suggestion => {
+          newActiveSuggestions.set(suggestion.id, suggestion)
+          newSuggestionStatus.set(suggestion.id, 'pending')
+        })
+        
+        console.log('[DocumentStore] Added', suggestions.length, 'suggestions')
+        
+        return {
+          activeSuggestions: newActiveSuggestions,
+          suggestionStatus: newSuggestionStatus
+        }
+      })
+    },
+    updateSuggestionStatus: (id: string, status: 'pending' | 'accepted' | 'rejected') => {
+      set((state) => {
+        const newSuggestionStatus = new Map(state.suggestionStatus)
+        newSuggestionStatus.set(id, status)
+        
+        console.log('[DocumentStore] Updated suggestion', id, 'status to', status)
+        
+        return {
+          suggestionStatus: newSuggestionStatus
+        }
+      })
+    },
+    clearSuggestions: () => {
+      console.log('[DocumentStore] Clearing all suggestions')
+      set({
+        activeSuggestions: new Map(),
+        suggestionStatus: new Map()
+      })
+    },
+    getSuggestionById: (id: string) => {
+      return get().activeSuggestions.get(id)
     }
   }
 }) 

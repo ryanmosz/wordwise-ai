@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { debounce } from '../utils/debounce'
 import type { Suggestion, SuggestionType } from '../types/suggestion'
+import { useDocumentStore } from '../store/documentStore'
 
 interface UseSuggestionsOptions {
   text: string
@@ -98,7 +99,19 @@ export function useSuggestions({
     bannedWords: []
   }
 }: UseSuggestionsOptions): UseSuggestionsReturn {
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([])
+  // Get store methods and state
+  const { 
+    activeSuggestions, 
+    suggestionStatus,
+    addSuggestions, 
+    updateSuggestionStatus, 
+    clearSuggestions,
+    getSuggestionById 
+  } = useDocumentStore()
+  
+  // Convert Map to array for the return value
+  const suggestions = Array.from(activeSuggestions.values())
+  
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const requestRef = useRef<number>(0)
@@ -114,7 +127,7 @@ export function useSuggestions({
       // Skip if too short
       if (text.length < 10) {
         console.log('[useSuggestions] Text too short, skipping analysis')
-        setSuggestions([])
+        clearSuggestions()
         return
       }
       
@@ -132,7 +145,9 @@ export function useSuggestions({
         
         // Only update if this is still the latest request
         if (requestId === requestRef.current) {
-          setSuggestions(result.suggestions)
+          // Clear existing suggestions and add new ones
+          clearSuggestions()
+          addSuggestions(result.suggestions)
           lastFetchTimeRef.current = new Date().toISOString()
           console.log('[useSuggestions] Analysis complete, suggestions:', result.suggestions.length)
         }
@@ -149,7 +164,7 @@ export function useSuggestions({
         }
       }
     }, 2000), // 2 second delay
-    [documentId, userSettings]
+    [documentId, userSettings, clearSuggestions, addSuggestions]
   )
   
   // Effect to trigger analysis when text changes
@@ -172,10 +187,8 @@ export function useSuggestions({
   const acceptSuggestion = useCallback(async (suggestionId: string) => {
     console.log('[useSuggestions] Accepting suggestion:', suggestionId)
     
-    // Update local state
-    setSuggestions(prev => prev.map(s => 
-      s.id === suggestionId ? { ...s, accepted: true } : s
-    ))
+    // Update status in store
+    updateSuggestionStatus(suggestionId, 'accepted')
     
     // TODO: Send to analytics service when implemented
     // await analyticsService.trackSuggestion({
@@ -184,16 +197,14 @@ export function useSuggestions({
     //   type: suggestion.type,
     //   confidence: suggestion.confidence
     // })
-  }, [])
+  }, [updateSuggestionStatus])
   
   // Reject suggestion handler
   const rejectSuggestion = useCallback(async (suggestionId: string) => {
     console.log('[useSuggestions] Rejecting suggestion:', suggestionId)
     
-    // Update local state
-    setSuggestions(prev => prev.map(s => 
-      s.id === suggestionId ? { ...s, accepted: false } : s
-    ))
+    // Update status in store
+    updateSuggestionStatus(suggestionId, 'rejected')
     
     // TODO: Send to analytics service when implemented
     // await analyticsService.trackSuggestion({
@@ -202,14 +213,23 @@ export function useSuggestions({
     //   type: suggestion.type,
     //   confidence: suggestion.confidence
     // })
-  }, [])
+  }, [updateSuggestionStatus])
   
   // Calculate debug info
   const debugInfo: DebugInfo | undefined = isDebugMode ? {
     totalSuggestions: suggestions.length,
-    pendingSuggestions: suggestions.filter(s => s.accepted === null).length,
-    acceptedSuggestions: suggestions.filter(s => s.accepted === true).length,
-    rejectedSuggestions: suggestions.filter(s => s.accepted === false).length,
+    pendingSuggestions: suggestions.filter(s => {
+      const status = suggestionStatus.get(s.id)
+      return status === 'pending' || !status
+    }).length,
+    acceptedSuggestions: suggestions.filter(s => {
+      const status = suggestionStatus.get(s.id)
+      return status === 'accepted'
+    }).length,
+    rejectedSuggestions: suggestions.filter(s => {
+      const status = suggestionStatus.get(s.id)
+      return status === 'rejected'
+    }).length,
     lastFetchTime: lastFetchTimeRef.current,
     isDebugMode: true
   } : undefined

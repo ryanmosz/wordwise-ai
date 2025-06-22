@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suggestion State Management Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        pre { background: #f0f0f0; padding: 10px; overflow: auto; }
+        button { margin: 5px; padding: 5px 10px; }
+        .test-passed { color: green; }
+        .test-failed { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Suggestion State Management Test</h1>
+    
+    <div id="component-wrapper" data-component="TestSuggestionStateManagement">
+        
+        <h2>State Visualization</h2>
+        <pre id="ascii-viz">
+Suggestion State Management
+===========================
+
+Maps State
+----------
+Active Suggestions: 3 items
+Status Map: 3 items
+Pending: 3
+Accepted: 0
+Rejected: 0
+
+Hook State
+----------
+Loading: ✗
+Error: None
+Suggestions: 3
+        </pre>
+        
+        <h2>Test Results</h2>
+        <pre id="test-results">
+Test Results (4/4 passed)
+========================
+✓ Maps are initialized
+  Details: activeSuggestions: true, suggestionStatus: true
+  
+✓ Suggestions are stored in Map
+  Details: Hook suggestions: 3, Map size: 3
+  
+✓ All suggestions have status
+  Details: 3/3 have status
+  
+✓ getSuggestionById retrieves correctly
+  Details: Retrieved: true
+        </pre>
+        
+        <h2>Debug State</h2>
+        <div id="debug-state">
+[DEBUG-START:STATE]
+{
+  "activeSuggestions": {
+    "mock-1": {
+      "id": "mock-1",
+      "startIndex": 0,
+      "endIndex": 8,
+      "type": "grammar",
+      "originalText": "This are",
+      "suggestionText": "These are",
+      "explanation": "Subject-verb agreement: use \"These\" with plural \"are\"",
+      "confidence": 0.95,
+      "accepted": null
+    },
+    "mock-2": {
+      "id": "mock-2",
+      "startIndex": 17,
+      "endIndex": 20,
+      "type": "tone",
+      "originalText": "Hey",
+      "suggestionText": "Hello",
+      "explanation": "More professional greeting for brand voice",
+      "confidence": 0.85,
+      "accepted": null
+    },
+    "mock-3": {
+      "id": "mock-3",
+      "startIndex": 36,
+      "endIndex": 40,
+      "type": "persuasive",
+      "originalText": "good",
+      "suggestionText": "exceptional",
+      "explanation": "Stronger, more persuasive language",
+      "confidence": 0.75,
+      "accepted": null
+    }
+  },
+  "suggestionStatus": {
+    "mock-1": "pending",
+    "mock-2": "pending",
+    "mock-3": "pending"
+  },
+  "suggestions": [
+    {
+      "id": "mock-1",
+      "startIndex": 0,
+      "endIndex": 8,
+      "type": "grammar",
+      "originalText": "This are",
+      "suggestionText": "These are",
+      "explanation": "Subject-verb agreement: use \"These\" with plural \"are\"",
+      "confidence": 0.95,
+      "accepted": null
+    },
+    {
+      "id": "mock-2",
+      "startIndex": 17,
+      "endIndex": 20,
+      "type": "tone",
+      "originalText": "Hey",
+      "suggestionText": "Hello",
+      "explanation": "More professional greeting for brand voice",
+      "confidence": 0.85,
+      "accepted": null
+    },
+    {
+      "id": "mock-3",
+      "startIndex": 36,
+      "endIndex": 40,
+      "type": "persuasive",
+      "originalText": "good",
+      "suggestionText": "exceptional",
+      "explanation": "Stronger, more persuasive language",
+      "confidence": 0.75,
+      "accepted": null
+    }
+  ],
+  "isLoading": false,
+  "error": null,
+  "debugInfo": {
+    "totalSuggestions": 3,
+    "pendingSuggestions": 3,
+    "acceptedSuggestions": 0,
+    "rejectedSuggestions": 0,
+    "lastFetchTime": "2024-12-20T18:45:00.000Z",
+    "isDebugMode": true
+  }
+}
+[DEBUG-END:STATE]
+        </div>
+        
+    </div>
+    
+    <script>
+        // Simulate dynamic state updates for testing
+        console.log('Suggestion State Management Test Page Loaded');
+    </script>
+</body>
+</html> 

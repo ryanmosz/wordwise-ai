@@ -11,6 +11,7 @@ import { TestSuggestionMark } from './pages/TestSuggestionMark'
 import { TestHoverDebug } from './pages/TestHoverDebug'
 import { TestUseSuggestions } from './pages/TestUseSuggestions'
 import { TestUseSuggestionsEnhanced } from './pages/TestUseSuggestionsEnhanced'
+import TestSuggestionStateManagement from './pages/TestSuggestionStateManagement'
 import { ProtectedRoute } from './components/common/ProtectedRoute'
 import { LoadingSpinner } from './components/common/LoadingSpinner'
 import { useAuthStore } from './store/authStore'
@@ -84,6 +85,7 @@ function App() {
         <Route path="/test-hover" element={<TestHoverDebug />} />
         <Route path="/test-use-suggestions" element={<TestUseSuggestions />} />
         <Route path="/test-use-suggestions-enhanced" element={<TestUseSuggestionsEnhanced />} />
+        <Route path="/test-suggestion-state" element={<TestSuggestionStateManagement />} />
         <Route 
           path="/documents" 
           element={
