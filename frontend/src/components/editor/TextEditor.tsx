@@ -237,7 +237,7 @@ export const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ conte
   }, [])
 
   // Use the hover hook
-  useSuggestionHover(containerRef)
+  const hoverControls = useSuggestionHover(containerRef)
 
   // Expose editor methods via ref
   useImperativeHandle(ref, () => ({

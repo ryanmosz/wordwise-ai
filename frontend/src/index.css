@@ -70,6 +70,10 @@
   word-break: normal;
   overflow-wrap: normal;
   background: transparent; /* Ensure no default background */
+  /* Add padding to increase hover target area */
+  padding: 0.125rem 0;
+  /* Ensure the element has a proper box model */
+  position: relative;
 }
 
 /* Grammar suggestions - red underline */
@@ -104,9 +108,9 @@ span.suggestion.suggestion-headline {
   background: transparent !important; /* Ensure no default background */
 }
 
-/* Readability suggestions - indigo underline */
+/* Readability suggestions - light cyan/sky blue underline */
 .suggestion-readability {
-  text-decoration-color: #6366f1; /* indigo-500 */
+  text-decoration-color: #06b6d4; /* cyan-500 - much lighter than the persuasive blue */
 }
 
 /* Vocabulary suggestions - orange underline */
@@ -136,7 +140,7 @@ span.suggestion.suggestion-headline {
 
 /* Test that styles are loading */
 body::after {
-  content: 'CSS v4 - Hover Fix';
+  content: 'CSS v20 - Comprehensive edge case support';
   position: fixed;
   bottom: 0;
   right: 0;
@@ -175,7 +179,7 @@ span.suggestion.suggestion-tone.suggestion-hover {
 }
 
 span.suggestion.suggestion-persuasive.suggestion-hover {
-  background-color: rgb(239, 246, 255) !important; /* blue-50 */
+  background-color: rgb(219, 234, 254) !important; /* blue-100 */
 }
 
 span.suggestion.suggestion-conciseness.suggestion-hover {
@@ -187,7 +191,7 @@ span.suggestion.suggestion-headline.suggestion-hover {
 }
 
 span.suggestion.suggestion-readability.suggestion-hover {
-  background-color: rgb(238, 242, 255) !important; /* indigo-50 */
+  background-color: rgb(207, 250, 254) !important; /* cyan-100 - very light cyan */
 }
 
 span.suggestion.suggestion-vocabulary.suggestion-hover {
@@ -219,7 +223,7 @@ span.suggestion.suggestion-ab_test.suggestion-hover {
 }
 
 .ProseMirror span.suggestion.suggestion-persuasive.suggestion-hover {
-  background-color: rgb(239, 246, 255) !important;
+  background-color: rgb(219, 234, 254) !important;
 }
 
 .ProseMirror span.suggestion.suggestion-headline.suggestion-hover {
@@ -251,7 +255,7 @@ span.suggestion.suggestion-ab_test.suggestion-hover {
 }
 
 .interactive .suggestion-persuasive:hover {
-  background-color: rgb(239, 246, 255); /* blue-50 */
+  background-color: rgb(219, 234, 254); /* blue-100 */
   cursor: pointer;
 }
 
@@ -266,12 +270,12 @@ span.suggestion.suggestion-ab_test.suggestion-hover {
 }
 
 .interactive .suggestion-readability:hover {
-  background-color: rgb(238, 242, 255); /* indigo-50 */
+  background-color: rgb(207, 250, 254); /* cyan-100 */
   cursor: pointer;
 }
 
 .interactive .suggestion-vocabulary:hover {
-  background-color: rgb(255, 247, 237); /* orange-50 */
+  background-color: rgb(254, 226, 226); /* rose-100 */
   cursor: pointer;
 }
 
@@ -349,7 +353,7 @@ span.suggestion.suggestion-ab_test.suggestion-hover {
 
 .ProseMirror .suggestion.suggestion-readability,
 .ProseMirror span.suggestion.suggestion-readability {
-  text-decoration-color: #6366f1 !important; /* indigo-500 */
+  text-decoration-color: #06b6d4 !important; /* cyan-500 - clearly different from blue-500 */
 }
 
 .ProseMirror .suggestion.suggestion-vocabulary,
@@ -489,15 +493,12 @@ span.suggestion-headline.suggestion-hover,
 }
 
 /* Fix for last suggestion in a line getting stuck with background */
+/* COMMENTED OUT - This might be interfering with hover on last element
 .ProseMirror span[data-suggestion-id]:last-child:not(.suggestion-hover) {
   background: transparent !important;
   background-color: transparent !important;
 }
-
-/* Ensure no background on any suggestion unless it has the hover class */
-.ProseMirror span[data-suggestion-id] {
-  background: transparent !important;
-}
+*/
 
 /* Only apply background when suggestion-hover class is present */
 .ProseMirror span[data-suggestion-id].suggestion-hover {
@@ -537,4 +538,212 @@ span.suggestion.suggestion-headline.suggestion-hover {
 .ProseMirror span.suggestion-grammar.suggestion-hover,
 span.suggestion.suggestion-grammar.suggestion-hover {
   background-color: rgb(254, 242, 242) !important; /* red-50 */
+}
+
+/* Target persuasive suggestions specifically */
+.ProseMirror span[data-suggestion-type="persuasive"].suggestion-hover,
+.ProseMirror span.suggestion-persuasive.suggestion-hover,
+span.suggestion.suggestion-persuasive.suggestion-hover {
+  background-color: rgb(219, 234, 254) !important; /* blue-100 */
+}
+
+/* Target readability suggestions specifically */
+.ProseMirror span[data-suggestion-type="readability"].suggestion-hover,
+.ProseMirror span.suggestion-readability.suggestion-hover,
+span.suggestion.suggestion-readability.suggestion-hover {
+  background-color: rgb(207, 250, 254) !important; /* cyan-100 */
+}
+
+/* Target vocabulary suggestions specifically */
+.ProseMirror span[data-suggestion-type="vocabulary"].suggestion-hover,
+.ProseMirror span.suggestion-vocabulary.suggestion-hover,
+span.suggestion.suggestion-vocabulary.suggestion-hover {
+  background-color: rgb(254, 226, 226) !important; /* rose-100 */
+}
+
+/* Target conciseness suggestions specifically */
+.ProseMirror span[data-suggestion-type="conciseness"].suggestion-hover,
+.ProseMirror span.suggestion-conciseness.suggestion-hover,
+span.suggestion.suggestion-conciseness.suggestion-hover {
+  background-color: rgb(243, 232, 255) !important; /* purple-100 */
+}
+
+/* Target ab_test suggestions specifically */
+.ProseMirror span[data-suggestion-type="ab_test"].suggestion-hover,
+.ProseMirror span.suggestion-ab_test.suggestion-hover,
+span.suggestion.suggestion-ab_test.suggestion-hover {
+  background-color: rgb(204, 251, 241) !important; /* teal-100 */
+}
+
+/* CSS Custom Properties for suggestion hover colors */
+:root {
+  --suggestion-grammar-hover: rgb(254, 242, 242);
+  --suggestion-tone-hover: rgb(254, 252, 232);
+  --suggestion-persuasive-hover: rgb(219, 234, 254);
+  --suggestion-conciseness-hover: rgb(243, 232, 255);
+  --suggestion-headline-hover: rgb(240, 253, 244);
+  --suggestion-readability-hover: rgb(207, 250, 254); /* cyan-100 */
+  --suggestion-vocabulary-hover: rgb(254, 226, 226);
+  --suggestion-ab_test-hover: rgb(204, 251, 241);
+}
+
+/* Use CSS custom properties for hover backgrounds */
+.ProseMirror span[data-suggestion-id].suggestion-hover {
+  background-color: var(--suggestion-hover-bg, transparent) !important;
+}
+
+/* TEMPORARILY COMMENTED OUT - These rules are preventing hover from working
+.ProseMirror:not(.hover-ready) span[data-suggestion-id] {
+  background: transparent !important;
+  pointer-events: none !important;
+}
+
+.ProseMirror.hover-ready span[data-suggestion-id] {
+  pointer-events: auto !important;
+}
+*/
+
+/* SIMPLIFIED APPROACH - Always allow pointer events on suggestions */
+.ProseMirror span[data-suggestion-id] {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+/* Additional safeguard against initial hover states */
+.ProseMirror span[data-suggestion-id][data-initial="true"] {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Ensure hover states are visible when applied */
+.ProseMirror span[data-suggestion-type="grammar"][style*="background-color"] {
+  background-color: var(--suggestion-grammar-hover) !important;
+}
+
+.ProseMirror span[data-suggestion-type="tone"][style*="background-color"] {
+  background-color: var(--suggestion-tone-hover) !important;
+}
+
+.ProseMirror span[data-suggestion-type="headline"][style*="background-color"] {
+  background-color: var(--suggestion-headline-hover) !important;
+}
+
+/* Transition for smooth hover effect */
+.ProseMirror span[data-suggestion-id] {
+  transition: background-color 0.2s ease;
+}
+
+/* Check if adjacent sibling selector is affecting hover */
+.ProseMirror span[data-suggestion-id] + span[data-suggestion-id] {
+  /* Adjacent suggestion span - REMOVED orange dashed border for debugging */
+  /* border: 1px dashed orange; */
+}
+
+/* Ensure each suggestion type still has its proper hover color */
+.ProseMirror span[data-suggestion-type="grammar"]:hover {
+  background-color: rgb(254, 242, 242) !important; /* red-50 */
+  outline: none !important;
+}
+
+.ProseMirror span[data-suggestion-type="tone"]:hover {
+  background-color: rgb(254, 252, 232) !important; /* yellow-50 */
+  outline: none !important;
+}
+
+.ProseMirror span[data-suggestion-type="persuasive"]:hover {
+  background-color: rgb(219, 234, 254) !important; /* blue-100 */
+  outline: none !important;
+}
+
+.ProseMirror span[data-suggestion-type="conciseness"]:hover {
+  background-color: rgb(243, 232, 255) !important; /* purple-100 */
+  outline: none !important;
+}
+
+.ProseMirror span[data-suggestion-type="headline"]:hover {
+  background-color: rgb(240, 253, 244) !important; /* green-50 */
+  outline: none !important;
+}
+
+.ProseMirror span[data-suggestion-type="readability"]:hover {
+  background-color: rgb(207, 250, 254) !important; /* cyan-100 */
+  outline: none !important;
+}
+
+.ProseMirror span[data-suggestion-type="vocabulary"]:hover {
+  background-color: rgb(254, 226, 226) !important; /* rose-100 */
+  outline: none !important;
+}
+
+.ProseMirror span[data-suggestion-type="ab_test"]:hover {
+  background-color: rgb(204, 251, 241) !important; /* teal-100 */
+  outline: none !important;
+}
+
+/* Force specificity for adjacent suggestions */
+.ProseMirror p span[data-suggestion-id]:hover,
+.ProseMirror div span[data-suggestion-id]:hover,
+.ProseMirror * span[data-suggestion-id]:hover {
+  /* Should apply to all suggestions regardless of position */
+  opacity: 1 !important;
+}
+
+/* Remove any z-index issues */
+.ProseMirror span[data-suggestion-id] {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure no overflow is hiding hover states */
+.ProseMirror p,
+.ProseMirror div {
+  overflow: visible !important;
+}
+
+/* Ensure suggestion elements capture mouse events properly */
+.ProseMirror .suggestion,
+.ProseMirror span[data-suggestion-id] {
+  /* Make sure the element can receive pointer events */
+  pointer-events: auto !important;
+  /* Keep inline display for natural text flow */
+  display: inline;
+  position: relative;
+  cursor: pointer;
+  /* Ensure the element is interactive */
+  user-select: text;
+}
+
+/* Specific fix for adjacent suggestions */
+.ProseMirror span[data-suggestion-id] + span[data-suggestion-id] {
+  /* Ensure adjacent suggestions are also hoverable */
+  pointer-events: auto !important;
+  margin-left: 0.1em; /* Small gap to ensure separate hover areas */
+}
+
+/* Debug: Make hover areas visible temporarily */
+.ProseMirror span[data-suggestion-id] {
+  /* REMOVED debug border - was causing visible borders on hover
+  border: 1px solid transparent; */
+  transition: background-color 0.1s ease;
+}
+
+/* REMOVED debug hover border
+.ProseMirror span[data-suggestion-id]:hover {
+  border-color: rgba(0, 0, 255, 0.3);
+}
+*/
+
+/* Add invisible padding area for better hover detection */
+.ProseMirror .suggestion::before,
+.ProseMirror span[data-suggestion-id]::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  left: -2px;
+  right: -2px;
+  /* Invisible but increases hover area */
+  background: transparent;
+  pointer-events: auto;
+  z-index: -1;
 }

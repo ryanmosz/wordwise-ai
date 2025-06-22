@@ -1,0 +1,111 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Inline Suggestions - Comprehensive Edge Case Testing
+
+## Latest Changes (v20)
+
+### Comprehensive Edge Case Support
+Added extensive edge case testing to Test 8 to ensure the suggestion marking system handles all scenarios correctly:
+
+1. **Partial Word Underlining**
+   - Only "are" underlined in "This are grammatical errors."
+
+2. **Multi-Word Partial Underlining**
+   - "This are" - two words with space between them
+
+3. **Skip First Word**
+   - "are grammatical errors." - everything except "This"
+
+4. **Skip Last Word**
+   - "This are grammatical" - everything except "errors."
+
+5. **Multi-Line Full Underline**
+   - Complete long sentence that wraps across lines
+
+6. **Multi-Line Partial Underline**
+   - "very long sentence that will wrap" - partial marking in wrapped text
+
+7. **Line Break Spanning**
+   - "spans across where the line break occurs" - underline crosses line boundary
+
+8. **Discontinuous Underlining**
+   - "Front words are underlined" + "end words underlined." - middle words skipped
+
+## Implementation Details
+
+### Special Case Handling
+The `applyMarkWithPunctuation` function now works with special cases:
+- `partial-are` - Finds specific instance and marks only "are"
+- `two-words` - Marks exactly two words with space
+- `skip-first` - Starts marking after first word
+- `skip-last` - Stops marking before last word
+- `partial-multiline` - Partial marking in multi-line text
+- `span-break` - Marking that spans line breaks
+- `front-part` / `end-part` - Separate marks for discontinuous underlining
+
+### Test Structure
+Test 8 now includes:
+- Lines 1-8: Original comprehensive test (all 8 suggestion types)
+- Line 9: Partial word test ("are" only)
+- Line 10: Two-word test ("This are")
+- Line 11: Skip first word test
+- Line 12: Skip last word test
+- Line 13: Full multi-line sentence
+- Line 14: Partial multi-line
+- Line 15: Line-break spanning
+- Line 16: Discontinuous underlining
+
+## Color Scheme (Final)
+| Type | Underline Color | Hover Background |
+|------|----------------|------------------|
+| Grammar | Red (#ef4444) | Light Red (rgb(254, 242, 242)) |
+| Tone | Yellow (#eab308) | Light Yellow (rgb(254, 252, 232)) |
+| Persuasive | Blue (#3b82f6) | Light Blue (rgb(219, 234, 254)) |
+| Conciseness | Purple (#a855f7) | Light Purple (rgb(243, 232, 255)) |
+| Headline | Green (#22c55e) | Light Green (rgb(240, 253, 244)) |
+| Readability | **Cyan (#06b6d4)** | **Light Cyan (rgb(207, 250, 254))** |
+| Vocabulary | Orange (#f97316) | Light Rose (rgb(254, 226, 226)) |
+| A/B Test | Teal (#14b8a6) | Light Teal (rgb(204, 251, 241)) |
+
+## Verification Steps
+
+1. Open http://localhost:3001/test-suggestion-mark
+2. Click "Test 8: Multi-line Suggestions"
+3. Check Debug Console for detailed results
+4. Verify each edge case:
+   - Line 9 shows only "are" underlined
+   - Line 10 shows "This are" underlined
+   - Line 11 shows "are grammatical errors." (no "This")
+   - Line 12 shows "This are grammatical" (no "errors.")
+   - Lines 13-15 test multi-line scenarios
+   - Line 16 shows discontinuous underlining
+
+## Key Features Validated
+
+1. **Underline Rules Compliance**
+   - Word boundaries respected
+   - Punctuation included with words
+   - No unwanted splits
+
+2. **Flexible Marking**
+   - Full sentences
+   - Partial words
+   - Multi-word phrases
+   - Discontinuous text
+
+3. **Visual Clarity**
+   - All 8 types clearly differentiated
+   - Cyan readability vs blue persuasive
+   - Consistent hover states
+
+## Previous Issues Status
+All previous issues remain fixed:
+- ✅ Punctuation preservation
+- ✅ Hover colors correct
+- ✅ Color differentiation clear
+- ✅ Edge cases handled
+
+The inline suggestions feature now supports all required underlining patterns while maintaining visual clarity and following the established rules.

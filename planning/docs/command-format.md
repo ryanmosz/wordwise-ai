@@ -29,4 +29,8 @@ You are a development assistant working inside the Cursor editor. As such, you a
 
 8. estimate a task difficulty score of 0 to 10 based on complexity of task and amount of work required. suggest whether i should do a git commit before starting on this task.
 
-9. Using the guidelines above, produce your plan to implement and verify task: 
+9. never do a git commit unless directed to 
+
+10. at the start of working on any task, review the handoff.mdc file, then delete its contents. once you believe a task is complete, update the handoff.mdc file describing what you just did. 
+
+11. Using the guidelines above, produce your plan to implement and verify task: 
