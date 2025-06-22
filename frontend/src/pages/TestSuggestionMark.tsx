@@ -384,85 +384,84 @@ export function TestSuggestionMark() {
             suggestionType: 'headline'
           })
           .run()
-              } else {
-          addDebugMessage('❌ Could not find headline text')
-        }
+      } else {
+        addDebugMessage('❌ Could not find headline text')
+      }
+      
+      // Find "The tone could be more professional" (now at the end)
+      const tonePos = findTextInDoc(editor.state.doc, 'The tone could be more professional')
+      if (tonePos.from !== -1) {
+        addDebugMessage(`📍 Applying tone mark (NOW AT END) from ${tonePos.from} to ${tonePos.to}`)
         
-        // Find "The tone could be more professional" (now at the end)
-        const tonePos = findTextInDoc(editor.state.doc, 'The tone could be more professional')
-        if (tonePos.from !== -1) {
-          addDebugMessage(`📍 Applying tone mark (NOW AT END) from ${tonePos.from} to ${tonePos.to}`)
+        editor.chain()
+          .focus()
+          .setTextSelection(tonePos)
+          .setMark('suggestion', {
+            suggestionId: 'prog-tone-1',
+            suggestionType: 'tone'
+          })
+          .run()
           
-          editor.chain()
-            .focus()
-            .setTextSelection(tonePos)
-            .setMark('suggestion', {
-              suggestionId: 'prog-tone-1',
-              suggestionType: 'tone'
-            })
-            .run()
-            
-          addDebugMessage(`✅ Applied tone mark to "The tone could be more professional" at END of line`)
-        } else {
-          addDebugMessage('❌ Could not find tone text')
-        }
+        addDebugMessage(`✅ Applied tone mark to "The tone could be more professional" at END of line`)
+      } else {
+        addDebugMessage('❌ Could not find tone text')
+      }
+      
+      // CRITICAL: Clear selection after applying all marks
+      editor.commands.setTextSelection(0)
+      addDebugMessage('🧹 Cleared text selection after applying marks')
+      
+      // Force a re-render by blurring and refocusing
+      editor.commands.blur()
+      setTimeout(() => {
+        editor.commands.focus()
+        addDebugMessage('🔄 Forced re-render by blur/focus cycle')
         
-        // CRITICAL: Clear selection after applying all marks
-        editor.commands.setTextSelection(0)
-        addDebugMessage('🧹 Cleared text selection after applying marks')
-        
-        // Force a re-render by blurring and refocusing
-        editor.commands.blur()
+        // Inspect the result
         setTimeout(() => {
-          editor.commands.focus()
-          addDebugMessage('🔄 Forced re-render by blur/focus cycle')
+          addDebugMessage('\n🔍 Checking applied marks...')
+          inspectCurrentDOM()
           
-          // Inspect the result
-          setTimeout(() => {
-            addDebugMessage('\n🔍 Checking applied marks...')
-            inspectCurrentDOM()
+          // Special check for all suggestions with focus on position
+          addDebugMessage('\n🎯 SPECIAL CHECK - POSITION ANALYSIS:')
+          const editor = document.querySelector('.ProseMirror')
+          if (editor) {
+            const allSuggestions = editor.querySelectorAll('[data-suggestion-id]')
+            addDebugMessage(`  Total suggestions: ${allSuggestions.length}`)
             
-            // Special check for all suggestions with focus on position
-            addDebugMessage('\n🎯 SPECIAL CHECK - POSITION ANALYSIS:')
-            const editor = document.querySelector('.ProseMirror')
-            if (editor) {
-              const allSuggestions = editor.querySelectorAll('[data-suggestion-id]')
-              addDebugMessage(`  Total suggestions: ${allSuggestions.length}`)
+            // Find the last suggestion in the document
+            let lastSuggestion: Element | null = null
+            let maxOffset = -1
+            
+            allSuggestions.forEach((el) => {
+              const rect = el.getBoundingClientRect()
+              const editorRect = editor.getBoundingClientRect()
+              const relativeOffset = rect.left - editorRect.left + rect.top - editorRect.top
               
-              // Find the last suggestion in the document
-              let lastSuggestion: Element | null = null
-              let maxOffset = -1
+              if (relativeOffset > maxOffset) {
+                maxOffset = relativeOffset
+                lastSuggestion = el
+              }
+            })
+            
+            addDebugMessage('\n  📍 SUGGESTION ORDER AND STYLES:')
+            allSuggestions.forEach((el, i) => {
+              const htmlEl = el as HTMLElement
+              const computedStyle = window.getComputedStyle(htmlEl)
+              const type = htmlEl.getAttribute('data-suggestion-type')
+              const isLast = el === lastSuggestion
               
-              allSuggestions.forEach((el) => {
-                const rect = el.getBoundingClientRect()
-                const editorRect = editor.getBoundingClientRect()
-                const relativeOffset = rect.left - editorRect.left + rect.top - editorRect.top
-                
-                if (relativeOffset > maxOffset) {
-                  maxOffset = relativeOffset
-                  lastSuggestion = el
-                }
-              })
-              
-              addDebugMessage('\n  📍 SUGGESTION ORDER AND STYLES:')
-              allSuggestions.forEach((el, i) => {
-                const htmlEl = el as HTMLElement
-                const computedStyle = window.getComputedStyle(htmlEl)
-                const type = htmlEl.getAttribute('data-suggestion-type')
-                const isLast = el === lastSuggestion
-                
-                addDebugMessage(`\n  ${i + 1}. ${type?.toUpperCase()} suggestion ("${htmlEl.textContent}"):`)
-                addDebugMessage(`    Background: ${computedStyle.backgroundColor}`)
-                addDebugMessage(`    Underline: ${computedStyle.textDecorationColor}`)
-                addDebugMessage(`    Classes: ${htmlEl.className}`)
-                if (isLast) {
-                  addDebugMessage(`    ⚠️  THIS IS THE LAST SUGGESTION IN THE LINE`)
-                }
-              })
-            }
-          }, 100)
-        }, 50)
-      }, 500)
+              addDebugMessage(`\n  ${i + 1}. ${type?.toUpperCase()} suggestion ("${htmlEl.textContent}"):`)
+              addDebugMessage(`    Background: ${computedStyle.backgroundColor}`)
+              addDebugMessage(`    Underline: ${computedStyle.textDecorationColor}`)
+              addDebugMessage(`    Classes: ${htmlEl.className}`)
+              if (isLast) {
+                addDebugMessage(`    ⚠️  THIS IS THE LAST SUGGESTION IN THE LINE`)
+              }
+            })
+          }
+        }, 100)
+      }, 50)
     }, 500)
   }
 
@@ -553,7 +552,7 @@ export function TestSuggestionMark() {
       }
       
       // CRITICAL: Clear selection after applying all marks (like Test 5 & 6)
-      editor.commands.setTextSelection(editor.state.doc.content.size)
+      editor.commands.setTextSelection(0)
       addDebugMessage('🧹 Cleared text selection after applying marks')
       
       // Force a re-render by blurring and refocusing
