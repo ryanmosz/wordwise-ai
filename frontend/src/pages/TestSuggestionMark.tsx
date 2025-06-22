@@ -630,9 +630,9 @@ export function TestSuggestionMark() {
   const testPreciseSelection = () => {
     addDebugMessage('🎯 TEST 8: Testing precise text selection with proper positions...')
     
-    // DIAGNOSTIC: Changed order - putting grammar (red) last to see if it's position-dependent
-    // Set content with formatting
-    const content = `<h2>Precise Selection Test</h2><p>The <em>italic tone</em> could be improved significantly.</p><p>This <strong><em>bold italic</em></strong> headline needs complete rework!</p><p>This text has <strong>bold words</strong> that need grammar fixes.</p>`
+    // DIAGNOSTIC: Moving tone (yellow) to the END to see if position matters
+    // Set content with formatting - tone is now last
+    const content = `<h2>Precise Selection Test</h2><p>This text has <strong>bold words</strong> that need grammar fixes.</p><p>This <strong><em>bold italic</em></strong> headline needs complete rework!</p><p>The <em>italic tone</em> could be improved significantly.</p>`
     setContent(content)
     
     setTimeout(() => {
@@ -648,25 +648,25 @@ export function TestSuggestionMark() {
       const fullText = editor.state.doc.textContent
       addDebugMessage(`📄 Full document text: "${fullText}"`)
       
-      // Test 1: Mark across italic text - "The italic tone could be improved significantly" (NOW FIRST)
-      const toneText = 'The italic tone could be improved significantly'
-      const toneStart = fullText.indexOf(toneText)
-      if (toneStart !== -1) {
-        const from = toneStart + 1
-        const to = from + toneText.length
+      // Test 1: Grammar mark FIRST - "text has bold words that need grammar fixes"
+      const grammarText = 'text has bold words that need grammar fixes'
+      const grammarStart = fullText.indexOf(grammarText)
+      if (grammarStart !== -1) {
+        const from = grammarStart + 1 // +1 because ProseMirror positions are 1-based
+        const to = from + grammarText.length
         
-        addDebugMessage(`📍 Applying tone mark (NOW FIRST) from ${from} to ${to}`)
+        addDebugMessage(`📍 Applying grammar mark (FIRST) from ${from} to ${to}`)
         
         editor.chain()
           .focus()
           .setTextSelection({ from, to })
           .setMark('suggestion', {
-            suggestionId: 'precise-2',
-            suggestionType: 'tone'
+            suggestionId: 'precise-1',
+            suggestionType: 'grammar'
           })
           .run()
       } else {
-        addDebugMessage('❌ Could not find tone text in full text')
+        addDebugMessage('❌ Could not find grammar text in full text')
       }
       
       // Test 2: Mark the headline - "This bold italic headline needs complete rework!"
@@ -690,25 +690,25 @@ export function TestSuggestionMark() {
         addDebugMessage('❌ Could not find headline text in full text')
       }
       
-      // Test 3: Mark across bold text - "text has bold words that need grammar fixes" (NOW LAST)
-      const grammarText = 'text has bold words that need grammar fixes'
-      const grammarStart = fullText.indexOf(grammarText)
-      if (grammarStart !== -1) {
-        const from = grammarStart + 1 // +1 because ProseMirror positions are 1-based
-        const to = from + grammarText.length
+      // Test 3: Mark across italic text - "The italic tone could be improved significantly" (NOW LAST)
+      const toneText = 'The italic tone could be improved significantly'
+      const toneStart = fullText.indexOf(toneText)
+      if (toneStart !== -1) {
+        const from = toneStart + 1
+        const to = from + toneText.length
         
-        addDebugMessage(`📍 Applying grammar mark (NOW LAST) from ${from} to ${to}`)
+        addDebugMessage(`📍 Applying tone mark (NOW LAST) from ${from} to ${to}`)
         
         editor.chain()
           .focus()
           .setTextSelection({ from, to })
           .setMark('suggestion', {
-            suggestionId: 'precise-1',
-            suggestionType: 'grammar'
+            suggestionId: 'precise-2',
+            suggestionType: 'tone'
           })
           .run()
       } else {
-        addDebugMessage('❌ Could not find grammar text in full text')
+        addDebugMessage('❌ Could not find tone text in full text')
       }
       
       // CRITICAL: Clear selection after applying all marks
@@ -725,10 +725,10 @@ export function TestSuggestionMark() {
         setTimeout(() => {
           addDebugMessage('\n🧪 Testing hover functionality on each type:')
           
-          // Test grammar hover (now last)
+          // Test grammar hover (now FIRST)
           const grammarEl = document.querySelector('[data-suggestion-id="precise-1"]') as HTMLElement
           if (grammarEl) {
-            addDebugMessage('  Testing GRAMMAR (red) hover...')
+            addDebugMessage('  Testing GRAMMAR (red) hover - FIRST position...')
             grammarEl.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
             setTimeout(() => {
               const bgColor = window.getComputedStyle(grammarEl).backgroundColor
@@ -737,27 +737,13 @@ export function TestSuggestionMark() {
             }, 50)
           }
           
-          // Test tone hover
-          setTimeout(() => {
-            const toneEl = document.querySelector('[data-suggestion-id="precise-2"]') as HTMLElement
-            if (toneEl) {
-              addDebugMessage('  Testing TONE (yellow) hover...')
-              toneEl.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
-              setTimeout(() => {
-                const bgColor = window.getComputedStyle(toneEl).backgroundColor
-                addDebugMessage(`    Tone background after hover: ${bgColor}`)
-                toneEl.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }))
-              }, 50)
-            }
-          }, 150)
-          
-          // Test headline hover
+          // Test headline hover (MIDDLE)
           setTimeout(() => {
             const headlineEls = document.querySelectorAll('[data-suggestion-id="precise-3"]')
             addDebugMessage(`  Found ${headlineEls.length} headline elements`)
             
             if (headlineEls.length > 0) {
-              addDebugMessage('  Testing HEADLINE (green) hover...')
+              addDebugMessage('  Testing HEADLINE (green) hover - MIDDLE position...')
               const firstHeadline = headlineEls[0] as HTMLElement
               
               // Log initial state
@@ -782,6 +768,20 @@ export function TestSuggestionMark() {
                 
                 firstHeadline.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }))
               }, 100) // Increased timeout
+            }
+          }, 150)
+          
+          // Test tone hover (now LAST)
+          setTimeout(() => {
+            const toneEl = document.querySelector('[data-suggestion-id="precise-2"]') as HTMLElement
+            if (toneEl) {
+              addDebugMessage('  Testing TONE (yellow) hover - LAST position...')
+              toneEl.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+              setTimeout(() => {
+                const bgColor = window.getComputedStyle(toneEl).backgroundColor
+                addDebugMessage(`    Tone background after hover: ${bgColor}`)
+                toneEl.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }))
+              }, 50)
             }
           }, 300)
         }, 200)
