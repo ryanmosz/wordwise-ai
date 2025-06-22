@@ -39,7 +39,52 @@ When implementing UI/UX features:
   - Interactive states (hover, focus, active) are implemented
   - Responsive behavior needs verification
 - Compare screenshots against design specifications or mockups
-- Document any visual discrepancies found through screenshot review 
+- Document any visual discrepancies found through screenshot review
+
+### W3M Enhanced Testing Methodology
+
+**Reference**: See `planning/docs/w3m-enhanced-testing-strategy.md` for comprehensive implementation details.
+
+When implementing features, incorporate w3m-compatible debug information to enable automated testing:
+
+#### Required Debug Patterns
+1. **Screen Reader Debug Sections** - Add `sr-only` divs with component state for all major components:
+   ```tsx
+   <div className="sr-only" data-testid="debug-info">
+     DEBUG: Component={componentName} State={JSON.stringify(state)} Error={error || 'none'}
+   </div>
+   ```
+
+2. **Debug URL Parameter** - Support `?debug=true` to enable enhanced debug output
+3. **Test Result Embedding** - Include automated test results in pages for verification
+
+#### When to Use W3M Testing
+- **Component State Verification**: Add debug info to verify props, state, and render status
+- **Authentication Flow**: Embed auth state for automated login verification  
+- **Form Validation**: Include validation state and error messages in sr-only sections
+- **API Integration**: Add request/response status in debug output
+- **Error States**: Always include error information in debug sections
+
+#### Implementation Requirements
+1. **Every new component** should include basic debug information
+2. **Test pages** must have comprehensive debug output for w3m verification
+3. **Create w3m test scripts** for new features when appropriate
+4. **Document w3m test commands** in component comments
+
+#### Benefits
+- Reduces manual testing time by 80%
+- Enables command-line verification without browser
+- Catches structural issues before visual testing
+- Supports CI/CD automation
+
+**Example Usage**:
+```bash
+# Verify component loaded correctly
+w3m -dump "http://localhost:3001/test-marks?debug=true" | grep "DEBUG:"
+
+# Check for errors
+w3m -dump "http://localhost:3001/editor" | grep -i "error"
+``` 
 
 ### Task Startup Process - REQUIRED
 

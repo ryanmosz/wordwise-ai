@@ -3,12 +3,18 @@ import StarterKit from '@tiptap/starter-kit'
 import Highlight from '@tiptap/extension-highlight'
 import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
-import { useEffect } from 'react'
+import { useEffect, useRef, useImperativeHandle, forwardRef, useState } from 'react'
 import { LoadingSpinner } from '../common/LoadingSpinner'
+import { SuggestionMark } from './SuggestionMark'
+import { useSuggestionHover } from '../../hooks/useSuggestionHover'
 
 interface TextEditorProps {
   content: string
   onChange: (content: string) => void
+}
+
+export interface TextEditorHandle {
+  getEditor: () => ReturnType<typeof useEditor>
 }
 
 interface ToolbarProps {
@@ -194,31 +200,74 @@ function Toolbar({ editor }: ToolbarProps) {
   )
 }
 
-export function TextEditor({ content, onChange }: TextEditorProps) {
+export const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ content, onChange }, ref) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isFocused, setIsFocused] = useState(false)
+  
   const editor = useEditor({
     extensions: [
-      StarterKit,
-      Highlight.configure({
-        multicolor: true,
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3]
+        }
       }),
-      Underline,
       Placeholder.configure({
-        placeholder: 'Type your content here...',
+        placeholder: 'Start writing...'
       }),
+      SuggestionMark
     ],
     content,
     onUpdate: ({ editor }) => {
-      const html = editor.getHTML()
-      onChange(html)
+      onChange(editor.getHTML())
     },
+    onFocus: () => setIsFocused(true),
+    onBlur: () => setIsFocused(false),
     editorProps: {
       attributes: {
-        class: 'prose prose-lg prose-slate max-w-none focus:outline-none min-h-[400px] [&_h1]:text-4xl [&_h1]:font-bold [&_h1]:mb-4 [&_h2]:text-3xl [&_h2]:font-bold [&_h2]:mb-3 [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:mb-2 [&_p]:text-base [&_p]:mb-4',
-      },
-    },
+        class: 'prose prose-lg max-w-none focus:outline-none min-h-[400px] p-4'
+      }
+    }
   })
 
-  // Update editor content when prop changes
+  // Add interactive class after initial render to prevent hover styles on load
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    // Start with no pointer events to prevent hover bugs
+    containerRef.current.classList.add('no-pointer-events')
+    
+    let hasMouseMoved = false
+    
+    const handleFirstMouseMove = () => {
+      if (!hasMouseMoved && containerRef.current) {
+        hasMouseMoved = true
+        // Remove no-pointer-events and add both interactive and pointer-events-ready
+        containerRef.current.classList.remove('no-pointer-events')
+        containerRef.current.classList.add('interactive', 'pointer-events-ready')
+        // Remove the listener after first movement
+        document.removeEventListener('mousemove', handleFirstMouseMove)
+      }
+    }
+    
+    // Wait a bit before listening for mouse movement
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousemove', handleFirstMouseMove)
+    }, 100)
+
+    return () => {
+      clearTimeout(timeoutId)
+      document.removeEventListener('mousemove', handleFirstMouseMove)
+    }
+  }, [])
+
+  // Use the hover hook
+  useSuggestionHover(containerRef)
+
+  // Expose editor methods via ref
+  useImperativeHandle(ref, () => ({
+    getEditor: () => editor
+  }), [editor])
+
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
       editor.commands.setContent(content)
@@ -238,10 +287,59 @@ export function TextEditor({ content, onChange }: TextEditorProps) {
 
   return (
     <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-      <Toolbar editor={editor} />
-      <div className="p-6">
-        <EditorContent editor={editor} />
+      <div className="border-b px-4 py-2 bg-gray-50 flex items-center gap-2">
+        <button
+          onClick={() => editor?.chain().focus().toggleBold().run()}
+          className={`px-3 py-1 rounded ${
+            editor?.isActive('bold') ? 'bg-gray-200' : 'hover:bg-gray-100'
+          }`}
+          disabled={!editor}
+        >
+          <strong>B</strong>
+        </button>
+        <button
+          onClick={() => editor?.chain().focus().toggleItalic().run()}
+          className={`px-3 py-1 rounded ${
+            editor?.isActive('italic') ? 'bg-gray-200' : 'hover:bg-gray-100'
+          }`}
+          disabled={!editor}
+        >
+          <em>I</em>
+        </button>
+        <button
+          onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+          className={`px-3 py-1 rounded ${
+            editor?.isActive('heading', { level: 2 }) ? 'bg-gray-200' : 'hover:bg-gray-100'
+          }`}
+          disabled={!editor}
+        >
+          H2
+        </button>
+        {/* Debug button */}
+        {process.env.NODE_ENV === 'development' && (
+          <button
+            onClick={() => {
+              console.log('🔍 DEBUG: Editor DOM')
+              const editorEl = containerRef.current?.querySelector('.ProseMirror')
+              if (editorEl) {
+                const suggestions = editorEl.querySelectorAll('[data-suggestion-id]')
+                console.log(`Found ${suggestions.length} suggestions:`)
+                suggestions.forEach((s, i) => {
+                  console.log(`${i}: ID=${s.getAttribute('data-suggestion-id')}, Type=${s.getAttribute('data-suggestion-type')}`)
+                })
+              }
+            }}
+            className="ml-auto px-3 py-1 rounded bg-gray-600 text-white text-xs hover:bg-gray-700"
+          >
+            Debug DOM
+          </button>
+        )}
+      </div>
+      <div ref={containerRef} className="p-6">
+        <EditorContent editor={editor} className="prose prose-lg max-w-none" />
       </div>
     </div>
   )
-} 
+})
+
+TextEditor.displayName = 'TextEditor' 

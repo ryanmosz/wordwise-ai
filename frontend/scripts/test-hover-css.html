@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Hover CSS</title>
+  <style>
+    /* Test our CSS selectors */
+    .suggestion {
+      text-decoration: underline;
+      text-decoration-style: wavy;
+      text-underline-offset: 2px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    
+    .suggestion-hover {
+      background-color: rgba(59, 130, 246, 0.1) !important;
+    }
+    
+    .suggestion.suggestion-grammar.suggestion-hover {
+      background-color: rgb(254, 242, 242) !important;
+    }
+    
+    .suggestion.suggestion-tone.suggestion-hover {
+      background-color: rgb(254, 252, 232) !important;
+    }
+  </style>
+</head>
+<body>
+  <h1>CSS Selector Test</h1>
+  
+  <p>Regular suggestion: <span class="suggestion">Test text</span></p>
+  
+  <p>With hover: <span class="suggestion suggestion-hover">Test with hover</span></p>
+  
+  <p>Grammar with hover: <span class="suggestion suggestion-grammar suggestion-hover">Grammar error</span></p>
+  
+  <p>Tone with hover: <span class="suggestion suggestion-tone suggestion-hover">Tone suggestion</span></p>
+  
+  <script>
+    // Test if CSS is applying
+    const elements = document.querySelectorAll('.suggestion-hover');
+    elements.forEach(el => {
+      const computed = window.getComputedStyle(el);
+      console.log(`Element: ${el.textContent}`);
+      console.log(`  Classes: ${el.className}`);
+      console.log(`  Background: ${computed.backgroundColor}`);
+    });
+  </script>
+</body>
+</html> 

@@ -1,0 +1,36 @@
+For Your Use Case, Install W3M:
+Perfect! W3M is now installed. Here's how your AI coding assistant (like Cursor) can use it for verification:
+
+AI Verification Commands:
+
+1. Basic Page Structure Check:
+bash
+2. Check Specific Elements:
+bash
+3. Accessibility Verification:
+bash
+4. Navigation Structure:
+bash
+What W3M Will Help AI Verify:
+
+✅ HTML Structure - Proper nesting, semantic elements  
+✅ Content Hierarchy - Headings, lists, sections in logical order  
+✅ Link Text - Meaningful link descriptions  
+✅ Form Elements - Input labels, form structure  
+✅ Accessibility - Screen reader experience simulation  
+✅ Content Flow - Reading order and logical progression  
+✅ Table Structure - Data tables rendered properly  
+
+Example AI Verification Workflow:
+
+1. AI builds TypeScript/Tailwind site
+2. Starts local dev server: deno serve --port 3000
+3. Verifies with: w3m -dump http://localhost:3000
+4. Checks accessibility: w3m -dump -o display_link_number=1 http://localhost:3000
+5. AI can then verify:
+•  Content is in logical reading order
+•  Links have descriptive text
+•  Headings create proper hierarchy
+•  Forms are properly labeled
+
+This is actually a really smart approach for AI-assisted development! The AI can catch structural and accessibility issues that visual inspection might miss.

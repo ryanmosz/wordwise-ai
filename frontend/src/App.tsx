@@ -5,6 +5,10 @@ import { DocumentsPage } from './pages/DocumentsPage'
 import { EditorPage } from './pages/EditorPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { TestSuggestionHighlight } from './pages/TestSuggestionHighlight'
+import { TestSuggestionColors } from './pages/TestSuggestionColors'
+import { TestSuggestionMark } from './pages/TestSuggestionMark'
+import { TestHoverDebug } from './pages/TestHoverDebug'
 import { ProtectedRoute } from './components/common/ProtectedRoute'
 import { LoadingSpinner } from './components/common/LoadingSpinner'
 import { useAuthStore } from './store/authStore'
@@ -72,6 +76,10 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/test-suggestion" element={<TestSuggestionHighlight />} />
+        <Route path="/test-colors" element={<TestSuggestionColors />} />
+        <Route path="/test-marks" element={<TestSuggestionMark />} />
+        <Route path="/test-hover" element={<TestHoverDebug />} />
         <Route 
           path="/documents" 
           element={

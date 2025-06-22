@@ -186,13 +186,13 @@ docker-compose up
   - [x] 6.6 Configure OpenAI API key
   - [x] 6.7 Deploy edge function to Supabase
 
-- [ ] UNPLANNED - PREPARE DEMO
+- [x] UNPLANNED - PREPARE DEMO
 
 - [ ] 7.0 Inline Suggestion UI
-  - [ ] 7.1 Create SuggestionHighlight component
-  - [ ] 7.2 Create SuggestionCard popup component
-  - [ ] 7.3 Implement suggestion type color coding
-  - [ ] 7.4 Add TipTap custom marks for highlights
+  - [x] 7.1 Create SuggestionHighlight component
+  - [x] 7.2 Create SuggestionCard popup component
+  - [x] 7.3 Implement suggestion type color coding
+  - [x] 7.4 Add TipTap custom marks for highlights
   - [ ] 7.5 Create useSuggestions custom hook
   - [ ] 7.6 Implement suggestion state management
   - [ ] 7.7 Add accept/reject functionality
