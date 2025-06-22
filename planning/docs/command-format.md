@@ -18,6 +18,8 @@ You are a development assistant working inside the Cursor editor. As such, you a
    b. Run the accompanying test / verification step.
       • Automate checks via code or command line whenever possible.
       • If a test cannot be run without my help, pause and ask me.
+      • place tests to be completed manually by me into handoff.mdc
+      • feel free to ask me for a screenshot if one would be helpful
    c. Do not continue to the next sub-task until the current one passes its test.
    d. Only mark a task as complete after all testing is complete and verified. 
 

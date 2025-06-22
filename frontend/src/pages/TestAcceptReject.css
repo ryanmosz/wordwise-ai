@@ -1,0 +1,47 @@
+@keyframes acceptPulse {
+  0% { 
+    transform: scale(0.5); 
+    opacity: 0; 
+  }
+  50% { 
+    transform: scale(1.5); 
+    opacity: 1; 
+  }
+  100% { 
+    transform: scale(1); 
+    opacity: 0; 
+  }
+}
+
+@keyframes rejectSlide {
+  0% { 
+    transform: translateX(0); 
+    opacity: 1; 
+  }
+  100% { 
+    transform: translateX(20px); 
+    opacity: 0; 
+  }
+}
+
+/* Remove any conflicting styles - using global styles from index.css */
+.suggestion {
+  /* Ensure no double underline from border */
+  border-bottom: none !important;
+}
+
+.suggestion-grammar {
+  cursor: pointer;
+}
+
+.suggestion-tone {
+  cursor: pointer;
+}
+
+.suggestion-persuasive {
+  cursor: pointer;
+}
+
+.suggestion:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+} 

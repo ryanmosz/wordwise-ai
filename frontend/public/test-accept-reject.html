@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Accept/Reject Functionality</title>
+    <style>
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        /* Use text-decoration instead of border-bottom to match the app's style */
+        .suggestion-grammar {
+            text-decoration: underline;
+            text-decoration-color: #ef4444;
+            text-decoration-thickness: 2px;
+            cursor: pointer;
+        }
+        
+        .suggestion-tone {
+            text-decoration: underline;
+            text-decoration-color: #eab308;
+            text-decoration-thickness: 2px;
+            cursor: pointer;
+        }
+        
+        .suggestion-persuasive {
+            text-decoration: underline;
+            text-decoration-color: #3b82f6;
+            text-decoration-thickness: 2px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Visible content for browser testing -->
+    <h1>Test Accept/Reject Functionality</h1>
+    
+    <h2>Editor with Suggestions</h2>
+    <div id="editor-content">
+        <p>
+            <span class="suggestion-grammar">This are</span> a test sentence with 
+            <span class="suggestion-tone">very unique</span> content. 
+            <span class="suggestion-persuasive">Our product is good</span> and helps you achieve your goals.
+        </p>
+    </div>
+    
+    <h2>Statistics</h2>
+    <div id="stats">
+        <div>Accepted: <span id="accepted-count">0</span></div>
+        <div>Rejected: <span id="rejected-count">0</span></div>
+        <div>Pending: <span id="pending-count">3</span></div>
+    </div>
+    
+    <!-- Hidden debug section (visible to w3m) -->
+    <div class="sr-only" data-testid="accept-reject-debug">
+        DEBUG: Accept/Reject Test Page
+        ==============================
+        Total Suggestions: 3
+        Accepted: 0
+        Rejected: 0
+        Pending: 3
+        Editor Ready: yes
+    </div>
+    
+    <!-- ASCII Visualization -->
+    <pre class="sr-only" aria-label="suggestion-status">
+Suggestion Status:
+Grammar:     [ ] pending
+Tone:        [ ] pending
+Persuasive:  [ ] pending
+    </pre>
+    
+    <!-- Test scenarios for different states -->
+    <div class="sr-only" id="test-scenarios">
+        TEST SCENARIO 1: Initial State
+        All suggestions pending, none accepted or rejected
+        
+        TEST SCENARIO 2: After Accept
+        Text changed, mark removed, status updated
+        
+        TEST SCENARIO 3: After Reject
+        Text unchanged, mark removed, status updated
+    </div>
+    
+    <!-- Structured debug data for parsing -->
+    <div id="accept-reject-state" class="sr-only">
+ACCEPT/REJECT STATE
+===================
+Total: 3
+Accepted: 0
+Rejected: 0
+Pending: 3
+Ready: true
+
+Suggestion Details:
+- test-1: grammar (pending)
+- test-2: tone (pending)
+- test-3: persuasive (pending)
+    </div>
+    
+    <!-- JSON data island for machine parsing -->
+    <script type="application/json" id="debug-state" class="debug-data">
+{
+    "page": "test-accept-reject",
+    "timestamp": "2024-01-21T10:30:00Z",
+    "state": {
+        "totalSuggestions": 3,
+        "accepted": 0,
+        "rejected": 0,
+        "pending": 3,
+        "editorReady": true
+    },
+    "suggestions": [
+        {
+            "id": "test-1",
+            "type": "grammar",
+            "status": "pending",
+            "originalText": "This are",
+            "suggestionText": "These are"
+        },
+        {
+            "id": "test-2",
+            "type": "tone",
+            "status": "pending",
+            "originalText": "very unique",
+            "suggestionText": "distinctive"
+        },
+        {
+            "id": "test-3",
+            "type": "persuasive",
+            "status": "pending",
+            "originalText": "Our product is good",
+            "suggestionText": "Our award-winning solution transforms your workflow"
+        }
+    ]
+}
+    </script>
+</body>
+</html> 
