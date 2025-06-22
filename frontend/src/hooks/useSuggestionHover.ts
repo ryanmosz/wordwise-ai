@@ -80,7 +80,7 @@ export function useSuggestionHover(containerRef: React.RefObject<HTMLElement>) {
             console.log(`Applied inline style for ${suggestionType}:`, SUGGESTION_HOVER_COLORS[suggestionType])
             
             // Force a repaint to ensure the style is applied
-            void htmlEl.offsetHeight // Read property to force repaint
+            void htmlEl.offsetHeight // Force reflow
             
             // Double-check the style was applied
             const appliedBg = window.getComputedStyle(htmlEl).backgroundColor

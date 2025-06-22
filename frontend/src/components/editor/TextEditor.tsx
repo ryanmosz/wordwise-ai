@@ -229,34 +229,59 @@ export const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ conte
     }
   })
 
-  // Add interactive class after initial render to prevent hover styles on load
+  // Add classes to container and setup event delegation
   useEffect(() => {
-    if (!containerRef.current) return
-
-    // Start with no pointer events to prevent hover bugs
-    containerRef.current.classList.add('no-pointer-events')
-    
-    let hasMouseMoved = false
-    
-    const handleFirstMouseMove = () => {
-      if (!hasMouseMoved && containerRef.current) {
-        hasMouseMoved = true
-        // Remove no-pointer-events and add both interactive and pointer-events-ready
-        containerRef.current.classList.remove('no-pointer-events')
-        containerRef.current.classList.add('interactive', 'pointer-events-ready')
-        // Remove the listener after first movement
-        document.removeEventListener('mousemove', handleFirstMouseMove)
+    if (containerRef.current) {
+      containerRef.current.classList.add('interactive', 'pointer-events-ready')
+      
+      // CRITICAL FIX: Add event delegation for hover handling
+      // This ensures hover works for all positions, not just the first
+      const editor = containerRef.current.querySelector('.ProseMirror')
+      if (editor) {
+        const handleMouseOver = (e: MouseEvent) => {
+          const target = e.target as HTMLElement
+          const suggestion = target.closest('[data-suggestion-id]') as HTMLElement
+          
+          if (suggestion && !suggestion.classList.contains('suggestion-hover')) {
+            // Let the hover hook handle the actual hover logic
+            // This just ensures the event is properly triggered
+            suggestion.dispatchEvent(new MouseEvent('mouseover', { 
+              bubbles: true,
+              cancelable: true,
+              view: window
+            }))
+          }
+        }
+        
+        const handleMouseOut = (e: MouseEvent) => {
+          const target = e.target as HTMLElement
+          const suggestion = target.closest('[data-suggestion-id]') as HTMLElement
+          
+          if (suggestion && suggestion.classList.contains('suggestion-hover')) {
+            const relatedTarget = e.relatedTarget as HTMLElement
+            const toSuggestion = relatedTarget?.closest('[data-suggestion-id]')
+            
+            // Only trigger mouseout if we're leaving the suggestion
+            if (!toSuggestion || toSuggestion !== suggestion) {
+              suggestion.dispatchEvent(new MouseEvent('mouseout', {
+                bubbles: true,
+                cancelable: true,
+                view: window
+              }))
+            }
+          }
+        }
+        
+        // Use capture phase to ensure we catch events before they bubble
+        editor.addEventListener('mouseover', handleMouseOver, true)
+        editor.addEventListener('mouseout', handleMouseOut, true)
+        
+        // Cleanup
+        return () => {
+          editor.removeEventListener('mouseover', handleMouseOver, true)
+          editor.removeEventListener('mouseout', handleMouseOut, true)
+        }
       }
-    }
-    
-    // Wait a bit before listening for mouse movement
-    const timeoutId = setTimeout(() => {
-      document.addEventListener('mousemove', handleFirstMouseMove)
-    }, 100)
-
-    return () => {
-      clearTimeout(timeoutId)
-      document.removeEventListener('mousemove', handleFirstMouseMove)
     }
   }, [])
 
