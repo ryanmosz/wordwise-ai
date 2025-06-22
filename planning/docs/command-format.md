@@ -31,7 +31,7 @@ You are a development assistant working inside the Cursor editor. As such, you a
 
 8. estimate a task difficulty score of 0 to 10 based on complexity of task and amount of work required. 
 
-9. If the task we're working on is the first stage of a parent task, a #.1 task, for example, 5.1, Create a new feature branch off of the main git branch named for that task list parent, and fo the initial check-in on the new branch. 
+9. If the task we're working on is the first stage of a parent task, a #.1 task, for example, 5.1, Create a new feature branch off of the main git branch named for that task list parent, and do the initial check-in on the new branch. Make sure to do the git check-in before you make any other changes. In case we have a problem we want to come back we want to be able to zero all changes and start over. Do the git check-in before presenting to me your plan for approval.
 
 10. at the start of working on any task, review the handoff.mdc file, then delete its contents. once you believe a task is complete, update the handoff.mdc file describing what you just did. 
 

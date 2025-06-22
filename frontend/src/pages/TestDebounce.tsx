@@ -19,6 +19,7 @@ export function TestDebounce() {
   const requestIdRef = useRef(0)
   const lastRequestTimeRef = useRef<number>(0)
   const activeRequestRef = useRef<number | null>(null)
+  const pendingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
   // Track when analysis starts/ends
   const originalAnalyzeText = useRef<any>(null)
@@ -39,15 +40,21 @@ export function TestDebounce() {
     setText(newText)
     setKeystrokes(prev => prev + 1)
     
+    // Clear any pending timeout
+    if (pendingTimeoutRef.current) {
+      clearTimeout(pendingTimeoutRef.current)
+      pendingTimeoutRef.current = null
+    }
+    
     // Log the intent to analyze
     if (newText.length >= 10 && enabled) {
       const now = Date.now()
-      const timeSinceLastRequest = lastRequestTimeRef.current ? now - lastRequestTimeRef.current : 0
       
       // If there's an active request, mark it as cancelled
       if (activeRequestRef.current !== null) {
+        const cancelledId = activeRequestRef.current
         setRequestLogs(prev => prev.map(log => 
-          log.id === activeRequestRef.current 
+          log.id === cancelledId 
             ? { ...log, status: 'cancelled' as const }
             : log
         ))
@@ -65,27 +72,46 @@ export function TestDebounce() {
         status: 'pending'
       }])
       
-      // Set a timer to check if this request completes
-      setTimeout(() => {
-        if (isLoading && activeRequestRef.current === requestId) {
-          // Request is in progress
+      // Set a timer to mark as cancelled if not started within debounce time
+      pendingTimeoutRef.current = setTimeout(() => {
+        // If this request is still active but not loading, it was debounced
+        if (activeRequestRef.current === requestId && !isLoading) {
           setRequestLogs(prev => prev.map(log => 
-            log.id === requestId 
-              ? { ...log, status: 'completed' as const, duration: 2000 }
+            log.id === requestId && log.status === 'pending'
+              ? { ...log, status: 'cancelled' as const }
               : log
           ))
+          // Clear the active request since it was cancelled
+          if (activeRequestRef.current === requestId) {
+            activeRequestRef.current = null
+          }
         }
       }, 2100) // Slightly after debounce delay
+    } else if (newText.length < 10 && activeRequestRef.current !== null) {
+      // Text too short, cancel any pending request
+      const cancelledId = activeRequestRef.current
+      setRequestLogs(prev => prev.map(log => 
+        log.id === cancelledId && log.status === 'pending'
+          ? { ...log, status: 'cancelled' as const }
+          : log
+      ))
+      activeRequestRef.current = null
     }
   }
   
   // Monitor loading state changes
   useEffect(() => {
-    if (!isLoading && activeRequestRef.current !== null) {
+    if (isLoading && activeRequestRef.current !== null) {
+      // Analysis started - clear the timeout that would mark it as cancelled
+      if (pendingTimeoutRef.current) {
+        clearTimeout(pendingTimeoutRef.current)
+        pendingTimeoutRef.current = null
+      }
+    } else if (!isLoading && activeRequestRef.current !== null) {
       // Analysis completed
       const requestId = activeRequestRef.current
       setRequestLogs(prev => prev.map(log => 
-        log.id === requestId 
+        log.id === requestId && log.status === 'pending'
           ? { ...log, status: 'completed' as const }
           : log
       ))
@@ -93,11 +119,25 @@ export function TestDebounce() {
     }
   }, [isLoading])
   
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (pendingTimeoutRef.current) {
+        clearTimeout(pendingTimeoutRef.current)
+      }
+    }
+  }, [])
+  
   // Clear logs
   const clearLogs = () => {
     setRequestLogs([])
     setKeystrokes(0)
     requestIdRef.current = 0
+    activeRequestRef.current = null
+    if (pendingTimeoutRef.current) {
+      clearTimeout(pendingTimeoutRef.current)
+      pendingTimeoutRef.current = null
+    }
   }
   
   // Format time ago
