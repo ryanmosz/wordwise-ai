@@ -69,7 +69,9 @@ docker-compose up
 - `frontend/src/store/` - Zustand state management stores
 - `frontend/src/services/` - API and external service integrations
 - `frontend/src/types/` - TypeScript type definitions
+- `frontend/src/types/suggestion.ts` - Suggestion type definition with all suggestion types
 - `frontend/src/utils/` - Utility functions and helpers
+- `frontend/src/utils/debounce.ts` - Debounce utility function
 - `frontend/src/hooks/` - Custom React hooks
 
 ### Authentication & Services
@@ -91,8 +93,11 @@ docker-compose up
 
 ### AI Integration
 - `supabase/functions/analyze-text/index.ts` - Edge function for AI text analysis with OpenAI GPT-4o integration
-- `frontend/src/services/aiService.ts` - Frontend AI service integration
-- `frontend/src/hooks/useSuggestions.ts` - Custom hook for suggestion management
+- `frontend/src/services/aiService.ts` - Frontend AI service integration (to be implemented)
+- `frontend/src/hooks/useSuggestions.ts` - Custom hook for suggestion management with debouncing and state handling
+- `frontend/src/hooks/useSuggestions.test.ts` - Unit tests for useSuggestions hook
+- `frontend/src/pages/TestUseSuggestions.tsx` - Test page for useSuggestions hook functionality
+- `frontend/scripts/test-use-suggestions.sh` - W3M test script for automated hook testing
 
 ### Settings & Analytics
 - `frontend/src/pages/SettingsPage.tsx` - User settings interface
@@ -193,7 +198,7 @@ docker-compose up
   - [x] 7.2 Create SuggestionCard popup component
   - [x] 7.3 Implement suggestion type color coding
   - [x] 7.4 Add TipTap custom marks for highlights
-  - [ ] 7.5 Create useSuggestions custom hook
+  - [x] 7.5 Create useSuggestions custom hook
   - [ ] 7.6 Implement suggestion state management
   - [ ] 7.7 Add accept/reject functionality
 

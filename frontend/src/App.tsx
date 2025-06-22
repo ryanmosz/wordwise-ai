@@ -9,6 +9,8 @@ import { TestSuggestionHighlight } from './pages/TestSuggestionHighlight'
 import { TestSuggestionColors } from './pages/TestSuggestionColors'
 import { TestSuggestionMark } from './pages/TestSuggestionMark'
 import { TestHoverDebug } from './pages/TestHoverDebug'
+import { TestUseSuggestions } from './pages/TestUseSuggestions'
+import { TestUseSuggestionsEnhanced } from './pages/TestUseSuggestionsEnhanced'
 import { ProtectedRoute } from './components/common/ProtectedRoute'
 import { LoadingSpinner } from './components/common/LoadingSpinner'
 import { useAuthStore } from './store/authStore'
@@ -80,6 +82,8 @@ function App() {
         <Route path="/test-colors" element={<TestSuggestionColors />} />
         <Route path="/test-marks" element={<TestSuggestionMark />} />
         <Route path="/test-hover" element={<TestHoverDebug />} />
+        <Route path="/test-use-suggestions" element={<TestUseSuggestions />} />
+        <Route path="/test-use-suggestions-enhanced" element={<TestUseSuggestionsEnhanced />} />
         <Route 
           path="/documents" 
           element={

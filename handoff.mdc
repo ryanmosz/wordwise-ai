@@ -3,109 +3,128 @@ description:
 globs: 
 alwaysApply: false
 ---
-# Inline Suggestions - Comprehensive Edge Case Testing
+# Task 7.5: Create useSuggestions Custom Hook - COMPLETED
+# W3M Testing Infrastructure Enhancement - COMPLETED
 
-## Latest Changes (v20)
+## What Was Done
 
-### Comprehensive Edge Case Support
-Added extensive edge case testing to Test 8 to ensure the suggestion marking system handles all scenarios correctly:
+### Task 7.5 Completion
+1. **Created `useSuggestions` Hook** (`frontend/src/hooks/useSuggestions.ts`)
+   - Implemented with debouncing, state management, and mock suggestions
+   - Successfully tested with manual browser testing and console logging
 
-1. **Partial Word Underlining**
-   - Only "are" underlined in "This are grammatical errors."
+2. **W3M Testing Infrastructure** - Major enhancement based on comprehensive guide
+   - Created advanced testing patterns that demonstrate all features from the W3M testing guide
+   - Implemented reusable utilities and components for future testing needs
 
-2. **Multi-Word Partial Underlining**
-   - "This are" - two words with space between them
+## W3M Testing Enhancements
 
-3. **Skip First Word**
-   - "are grammatical errors." - everything except "This"
+### New Files Created:
 
-4. **Skip Last Word**
-   - "This are grammatical" - everything except "errors."
+1. **`frontend/src/utils/debugHelpers.tsx`**
+   - `isDebugMode()` - Detects ?debug=true URL parameter
+   - `withDebugInfo()` HOC - Wraps components with debug information
+   - `createASCIIVisualization()` - Generates ASCII art component health visualization
+   - `DebugMetaTags` - Component for debug meta tags (adapted for no react-helmet)
+   - `formatTestResults()` - Formats test results for W3M display
 
-5. **Multi-Line Full Underline**
-   - Complete long sentence that wraps across lines
+2. **`frontend/src/pages/TestUseSuggestionsEnhanced.tsx`**
+   - Enhanced test page demonstrating all W3M testing patterns
+   - Debug mode detection with conditional rendering
+   - ASCII art visualization of component state
+   - Live test execution and reporting
+   - Structured debug state with [DEBUG-START/END] markers
+   - JSON data islands for machine parsing
 
-6. **Multi-Line Partial Underline**
-   - "very long sentence that will wrap" - partial marking in wrapped text
+3. **`frontend/scripts/w3m-test-runner.sh`**
+   - Advanced bash script with colored output
+   - Multiple assertion types and comprehensive testing
+   - Meta tag extraction and JSON parsing
+   - Exit codes for CI/CD integration
 
-7. **Line Break Spanning**
-   - "spans across where the line break occurs" - underline crosses line boundary
+4. **`frontend/scripts/verify-with-w3m.cjs`** (renamed from .js for ES module compatibility)
+   - Node.js script with sophisticated parsing
+   - JSON state extraction and programmatic assertions
+   - Environment variable controls (SHOW_VIZ, SHOW_STATE)
+   - Module exports for reusability
 
-8. **Discontinuous Underlining**
-   - "Front words are underlined" + "end words underlined." - middle words skipped
+5. **`frontend/public/test-w3m-suggestions.html`** - Enhanced with:
+   - Debug meta tags in head
+   - ASCII art visualization
+   - Component wrapper markers
+   - Structured debug state
+   - Test results section
 
-## Implementation Details
+6. **`frontend/docs/w3m-testing-guide.md`** - Comprehensive guide combining:
+   - Original implementation experience
+   - All advanced patterns from planning document
+   - Implementation roadmap and success metrics
 
-### Special Case Handling
-The `applyMarkWithPunctuation` function now works with special cases:
-- `partial-are` - Finds specific instance and marks only "are"
-- `two-words` - Marks exactly two words with space
-- `skip-first` - Starts marking after first word
-- `skip-last` - Stops marking before last word
-- `partial-multiline` - Partial marking in multi-line text
-- `span-break` - Marking that spans line breaks
-- `front-part` / `end-part` - Separate marks for discontinuous underlining
+7. **`frontend/docs/w3m-test-improvements.md`**
+   - Summary of all improvements made
+   - Usage examples and next steps
 
-### Test Structure
-Test 8 now includes:
-- Lines 1-8: Original comprehensive test (all 8 suggestion types)
-- Line 9: Partial word test ("are" only)
-- Line 10: Two-word test ("This are")
-- Line 11: Skip first word test
-- Line 12: Skip last word test
-- Line 13: Full multi-line sentence
-- Line 14: Partial multi-line
-- Line 15: Line-break spanning
-- Line 16: Discontinuous underlining
+### Key Features Demonstrated:
 
-## Color Scheme (Final)
-| Type | Underline Color | Hover Background |
-|------|----------------|------------------|
-| Grammar | Red (#ef4444) | Light Red (rgb(254, 242, 242)) |
-| Tone | Yellow (#eab308) | Light Yellow (rgb(254, 252, 232)) |
-| Persuasive | Blue (#3b82f6) | Light Blue (rgb(219, 234, 254)) |
-| Conciseness | Purple (#a855f7) | Light Purple (rgb(243, 232, 255)) |
-| Headline | Green (#22c55e) | Light Green (rgb(240, 253, 244)) |
-| Readability | **Cyan (#06b6d4)** | **Light Cyan (rgb(207, 250, 254))** |
-| Vocabulary | Orange (#f97316) | Light Rose (rgb(254, 226, 226)) |
-| A/B Test | Teal (#14b8a6) | Light Teal (rgb(204, 251, 241)) |
+1. **ASCII Art Visualization**
+   ```
+   Component Status:
+   ================
+   Loading: ✓ Complete
+   Error:   ✓ No Errors
+   
+   Acceptance Rate: [██████░░░░░░░░░░░░░░] 33%
+   ```
 
-## Verification Steps
+2. **Structured Debug State**
+   ```
+   [DEBUG-START:STATE]
+   { ... JSON state ... }
+   [DEBUG-END:STATE]
+   ```
 
-1. Open http://localhost:3001/test-suggestion-mark
-2. Click "Test 8: Multi-line Suggestions"
-3. Check Debug Console for detailed results
-4. Verify each edge case:
-   - Line 9 shows only "are" underlined
-   - Line 10 shows "This are" underlined
-   - Line 11 shows "are grammatical errors." (no "This")
-   - Line 12 shows "This are grammatical" (no "errors.")
-   - Lines 13-15 test multi-line scenarios
-   - Line 16 shows discontinuous underlining
+3. **Automated Test Results**
+   - Self-documenting test execution
+   - Pass/fail tracking with details
+   - CI/CD ready with exit codes
 
-## Key Features Validated
+### Usage:
+```bash
+# Run enhanced W3M tests
+./scripts/w3m-test-runner.sh
 
-1. **Underline Rules Compliance**
-   - Word boundaries respected
-   - Punctuation included with words
-   - No unwanted splits
+# Show ASCII visualization
+SHOW_VIZ=true node scripts/verify-with-w3m.cjs
 
-2. **Flexible Marking**
-   - Full sentences
-   - Partial words
-   - Multi-word phrases
-   - Discontinuous text
+# Access enhanced React test page
+http://localhost:3000/test-use-suggestions-enhanced?debug=true
+```
 
-3. **Visual Clarity**
-   - All 8 types clearly differentiated
-   - Cyan readability vs blue persuasive
-   - Consistent hover states
+## Status:
+- Task 7.5 fully completed with comprehensive testing
+- W3M testing infrastructure significantly enhanced
+- All patterns from guide implemented and working
+- Ready for application to production components
 
-## Previous Issues Status
-All previous issues remain fixed:
-- ✅ Punctuation preservation
-- ✅ Hover colors correct
-- ✅ Color differentiation clear
-- ✅ Edge cases handled
+## Next Steps:
+- Consider installing react-helmet for proper meta tag support
+- Apply `withDebugInfo` HOC to production components
+- Add W3M tests to CI/CD pipeline
+- Create build script to generate static test snapshots
 
-The inline suggestions feature now supports all required underlining patterns while maintaining visual clarity and following the established rules.
+## Summary
+
+The W3M testing infrastructure has been significantly enhanced beyond the original Task 7.5 requirements. The current implementation demonstrates ALL advanced patterns from the comprehensive W3M testing guide, providing a powerful framework for automated testing of React SPAs without requiring a full browser environment. 
+
+Key achievements:
+- Complete implementation of all guide patterns
+- Reusable utilities and components
+- Multiple testing approaches (bash, Node.js, static HTML)
+- CI/CD ready with exit codes and assertions
+- Visual feedback through ASCII art
+- Machine-parseable debug output
+
+The infrastructure is now ready to be applied to production components for better testing and debugging capabilities.
+
+
+
