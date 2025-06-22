@@ -19,6 +19,7 @@ import { LoadingSpinner } from './components/common/LoadingSpinner'
 import { useAuthStore } from './store/authStore'
 import { useEffect } from 'react'
 import { supabase } from './services/supabase'
+import { TestDebounce } from './pages/TestDebounce'
 
 function AuthRedirect() {
   const { user, loading, checkUser } = useAuthStore()
@@ -90,6 +91,7 @@ function App() {
         <Route path="/test-suggestion-state" element={<TestSuggestionStateManagement />} />
         <Route path="/test-accept-reject" element={<TestAcceptReject />} />
         <Route path="/test-ai-service" element={<TestAIService />} />
+        <Route path="/test-debounce" element={<TestDebounce />} />
         <Route 
           path="/documents" 
           element={

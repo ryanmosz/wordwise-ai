@@ -31,6 +31,12 @@ interface DebugInfo {
   rejectedSuggestions: number
   lastFetchTime: string | null
   isDebugMode: boolean
+  debounceMetrics?: {
+    requestsInitiated: number
+    requestsCompleted: number
+    requestsCancelled: number
+    lastDebounceTime: number
+  }
 }
 
 export function useSuggestions({ 
@@ -61,6 +67,14 @@ export function useSuggestions({
   const requestRef = useRef<number>(0)
   const lastFetchTimeRef = useRef<string | null>(null)
   
+  // Debounce metrics tracking
+  const debounceMetricsRef = useRef({
+    requestsInitiated: 0,
+    requestsCompleted: 0,
+    requestsCancelled: 0,
+    lastDebounceTime: 0
+  })
+  
   // Check for debug mode
   const isDebugMode = typeof window !== 'undefined' && 
     new URLSearchParams(window.location.search).has('debug')
@@ -77,6 +91,8 @@ export function useSuggestions({
       
       // Track request number
       const requestId = ++requestRef.current
+      debounceMetricsRef.current.requestsInitiated++
+      debounceMetricsRef.current.lastDebounceTime = Date.now()
       
       setIsLoading(true)
       setError(null)
@@ -104,7 +120,12 @@ export function useSuggestions({
           
           addSuggestions(suggestionsWithIds)
           lastFetchTimeRef.current = new Date().toISOString()
+          debounceMetricsRef.current.requestsCompleted++
           console.log('[useSuggestions] Analysis complete, suggestions:', suggestionsWithIds.length)
+        } else {
+          // This request was superseded by a newer one
+          debounceMetricsRef.current.requestsCancelled++
+          console.log('[useSuggestions] Request cancelled (superseded by newer request)')
         }
       } catch (err) {
         // Only show error for latest request
@@ -112,6 +133,8 @@ export function useSuggestions({
           const error = err instanceof Error ? err : new Error('Analysis failed')
           setError(error)
           console.error('[useSuggestions] Analysis error:', error)
+        } else {
+          debounceMetricsRef.current.requestsCancelled++
         }
       } finally {
         if (requestId === requestRef.current) {
@@ -187,7 +210,8 @@ export function useSuggestions({
       return status === 'rejected'
     }).length,
     lastFetchTime: lastFetchTimeRef.current,
-    isDebugMode: true
+    isDebugMode: true,
+    debounceMetrics: { ...debounceMetricsRef.current }
   } : undefined
   
   // Add debug output for w3m testing
@@ -208,6 +232,13 @@ Accepted: ${debugInfo?.acceptedSuggestions || 0}
 Rejected: ${debugInfo?.rejectedSuggestions || 0}
 Last Fetch: ${lastFetchTimeRef.current || 'never'}
 Request Number: ${requestRef.current}
+Debounce Metrics:
+  Initiated: ${debounceMetricsRef.current.requestsInitiated}
+  Completed: ${debounceMetricsRef.current.requestsCompleted}
+  Cancelled: ${debounceMetricsRef.current.requestsCancelled}
+  Efficiency: ${debounceMetricsRef.current.requestsInitiated > 0 
+    ? Math.round((debounceMetricsRef.current.requestsCompleted / debounceMetricsRef.current.requestsInitiated) * 100) 
+    : 0}%
       `.trim()
     }
   }
