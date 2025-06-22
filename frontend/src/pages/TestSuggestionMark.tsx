@@ -1015,9 +1015,12 @@ export function TestSuggestionMark() {
         setTimeout(() => {
           addDebugMessage('\n📊 Checking manual hover results:')
           
-          [toneEl, headlineEl, grammarEl].forEach((el, i) => {
+          const elements = [toneEl, headlineEl, grammarEl]
+          const types = ['Tone', 'Headline', 'Grammar']
+          
+          elements.forEach((el, i) => {
             if (el) {
-              const type = ['Tone', 'Headline', 'Grammar'][i]
+              const type = types[i]
               const computed = window.getComputedStyle(el)
               const rect = el.getBoundingClientRect()
               
@@ -1033,6 +1036,117 @@ export function TestSuggestionMark() {
         }, 100)
       }, 500)
     }, 500)
+  }
+
+  // Test 8d: CSS Custom Properties approach
+  const testCSSVariableApproach = () => {
+    addDebugMessage('🎯 TEST 8d: Testing CSS custom properties approach...')
+    
+    const editor = editorRef.current?.editor
+    if (!editor) {
+      addDebugMessage('❌ No editor instance')
+      return
+    }
+    
+    // Clear and set content
+    editor.commands.clearContent()
+    editor.commands.insertContent({
+      type: 'doc',
+      content: [
+        {
+          type: 'heading',
+          attrs: { level: 2 },
+          content: [{ type: 'text', text: 'CSS Variable Test' }]
+        },
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'This ' },
+            { 
+              type: 'text', 
+              text: 'grammar text',
+              marks: [{
+                type: 'suggestion',
+                attrs: {
+                  suggestionId: 'css-var-1',
+                  suggestionType: 'grammar'
+                }
+              }]
+            },
+            { type: 'text', text: ' needs fixing. And this ' },
+            { 
+              type: 'text', 
+              text: 'tone suggestion',
+              marks: [{
+                type: 'suggestion',
+                attrs: {
+                  suggestionId: 'css-var-2',
+                  suggestionType: 'tone'
+                }
+              }]
+            },
+            { type: 'text', text: ' could be improved. Finally, this ' },
+            { 
+              type: 'text', 
+              text: 'headline',
+              marks: [{
+                type: 'suggestion',
+                attrs: {
+                  suggestionId: 'css-var-3',
+                  suggestionType: 'headline'
+                }
+              }]
+            },
+            { type: 'text', text: ' needs work.' }
+          ]
+        }
+      ]
+    })
+    
+    // Add CSS to use custom properties
+    setTimeout(() => {
+      const style = document.createElement('style')
+      style.textContent = `
+        /* Use CSS custom properties for hover backgrounds */
+        [data-suggestion-id] {
+          --hover-opacity: 0;
+          background-color: rgba(var(--hover-rgb), var(--hover-opacity));
+          transition: background-color 0.15s ease;
+        }
+        
+        [data-suggestion-type="grammar"] { --hover-rgb: 254, 242, 242; }
+        [data-suggestion-type="tone"] { --hover-rgb: 254, 252, 232; }
+        [data-suggestion-type="headline"] { --hover-rgb: 240, 253, 244; }
+        
+        /* Activate on hover by changing the custom property */
+        [data-suggestion-id]:hover {
+          --hover-opacity: 1;
+        }
+      `
+      document.head.appendChild(style)
+      
+      addDebugMessage('✅ Added CSS custom properties for hover')
+      
+      // Test the hover programmatically
+      setTimeout(() => {
+        const elements = document.querySelectorAll('[data-suggestion-id]')
+        addDebugMessage(`\n🔍 Found ${elements.length} suggestion elements`)
+        
+        elements.forEach((el) => {
+          const htmlEl = el as HTMLElement
+          const id = htmlEl.getAttribute('data-suggestion-id')
+          const type = htmlEl.getAttribute('data-suggestion-type')
+          
+          // Set the custom property instead of class/style
+          htmlEl.style.setProperty('--hover-opacity', '1')
+          
+          const computed = window.getComputedStyle(htmlEl)
+          addDebugMessage(`  ${type} (${id}): bg = ${computed.backgroundColor}`)
+        })
+        
+        addDebugMessage('\n✅ CSS variable approach test complete')
+      }, 100)
+    }, 100)
   }
 
   // Debug panel to show current DOM state
@@ -1348,6 +1462,12 @@ export function TestSuggestionMark() {
                   className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-left"
                 >
                   Test 8c: Manual Hover Test
+                </button>
+                <button
+                  onClick={testCSSVariableApproach}
+                  className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-left"
+                >
+                  Test 8d: CSS Custom Properties
                 </button>
                 <div className="border-t pt-3 mt-3 space-y-2">
                   <button
