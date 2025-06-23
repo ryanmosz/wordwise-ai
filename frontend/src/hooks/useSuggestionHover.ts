@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react'
 
 // Simplified hover hook that just handles group hover for split suggestions
-export function useSuggestionHover<T extends HTMLElement = HTMLElement>(containerRef: React.RefObject<T>) {
+export function useSuggestionHover<T extends HTMLElement = HTMLElement>(containerRef: React.RefObject<T | null>) {
   const currentHoveredRef = useRef<string | null>(null)
   
   // Handle group hover for split suggestions
