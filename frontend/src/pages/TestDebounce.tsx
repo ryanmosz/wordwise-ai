@@ -21,9 +21,6 @@ export function TestDebounce() {
   const activeRequestRef = useRef<number | null>(null)
   const pendingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
-  // Track when analysis starts/ends
-  const originalAnalyzeText = useRef<any>(null)
-  
   const { suggestions, isLoading, error } = useSuggestions({
     text,
     documentId,
@@ -35,22 +32,18 @@ export function TestDebounce() {
     }
   })
   
-  // Track typing
   const handleTextChange = (newText: string) => {
     setText(newText)
     setKeystrokes(prev => prev + 1)
     
-    // Clear any pending timeout
     if (pendingTimeoutRef.current) {
       clearTimeout(pendingTimeoutRef.current)
       pendingTimeoutRef.current = null
     }
     
-    // Log the intent to analyze
     if (newText.length >= 10 && enabled) {
       const now = Date.now()
       
-      // If there's an active request, mark it as cancelled
       if (activeRequestRef.current !== null) {
         const cancelledId = activeRequestRef.current
         setRequestLogs(prev => prev.map(log => 
@@ -60,7 +53,6 @@ export function TestDebounce() {
         ))
       }
       
-      // Add new pending request
       const requestId = ++requestIdRef.current
       activeRequestRef.current = requestId
       lastRequestTimeRef.current = now
@@ -72,23 +64,19 @@ export function TestDebounce() {
         status: 'pending'
       }])
       
-      // Set a timer to mark as cancelled if not started within debounce time
       pendingTimeoutRef.current = setTimeout(() => {
-        // If this request is still active but not loading, it was debounced
         if (activeRequestRef.current === requestId && !isLoading) {
           setRequestLogs(prev => prev.map(log => 
             log.id === requestId && log.status === 'pending'
               ? { ...log, status: 'cancelled' as const }
               : log
           ))
-          // Clear the active request since it was cancelled
           if (activeRequestRef.current === requestId) {
             activeRequestRef.current = null
           }
         }
-      }, 2100) // Slightly after debounce delay
+      }, 2100)
     } else if (newText.length < 10 && activeRequestRef.current !== null) {
-      // Text too short, cancel any pending request
       const cancelledId = activeRequestRef.current
       setRequestLogs(prev => prev.map(log => 
         log.id === cancelledId && log.status === 'pending'
@@ -99,16 +87,13 @@ export function TestDebounce() {
     }
   }
   
-  // Monitor loading state changes
   useEffect(() => {
     if (isLoading && activeRequestRef.current !== null) {
-      // Analysis started - clear the timeout that would mark it as cancelled
       if (pendingTimeoutRef.current) {
         clearTimeout(pendingTimeoutRef.current)
         pendingTimeoutRef.current = null
       }
     } else if (!isLoading && activeRequestRef.current !== null) {
-      // Analysis completed
       const requestId = activeRequestRef.current
       setRequestLogs(prev => prev.map(log => 
         log.id === requestId && log.status === 'pending'
@@ -119,7 +104,6 @@ export function TestDebounce() {
     }
   }, [isLoading])
   
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (pendingTimeoutRef.current) {
@@ -128,7 +112,6 @@ export function TestDebounce() {
     }
   }, [])
   
-  // Clear logs
   const clearLogs = () => {
     setRequestLogs([])
     setKeystrokes(0)
@@ -140,19 +123,31 @@ export function TestDebounce() {
     }
   }
   
-  // Format time ago
   const timeAgo = (timestamp: string) => {
     const seconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000)
     if (seconds < 60) return `${seconds}s ago`
     return `${Math.floor(seconds / 60)}m ago`
   }
   
+  const handleReset = () => {
+    setText('');
+    setRequestLogs([]);
+    setKeystrokes(0);
+    setEnabled(true);
+    // Reset the analyze function
+    requestIdRef.current = 0;
+    activeRequestRef.current = null;
+    if (pendingTimeoutRef.current) {
+      clearTimeout(pendingTimeoutRef.current);
+      pendingTimeoutRef.current = null;
+    }
+  };
+  
   return (
     <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Debounce Testing</h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column - Input and Controls */}
         <div>
           <div className="mb-4">
             <label className="block text-sm font-medium mb-2">
@@ -191,7 +186,6 @@ export function TestDebounce() {
             </button>
           </div>
           
-          {/* Status */}
           <div className="p-4 bg-gray-100 rounded">
             <h3 className="font-semibold mb-2">Current Status</h3>
             <div className="space-y-1 text-sm">
@@ -217,7 +211,6 @@ export function TestDebounce() {
             </div>
           </div>
           
-          {/* Loading Animation */}
           {isLoading && (
             <div className="mt-4 flex items-center gap-2 text-blue-600">
               <LoadingSpinner size="sm" />
@@ -226,7 +219,6 @@ export function TestDebounce() {
           )}
         </div>
         
-        {/* Right Column - Request Log */}
         <div>
           <h3 className="text-lg font-semibold mb-4">Request Log</h3>
           <div className="border rounded-lg bg-gray-50 p-4 h-96 overflow-y-auto">
@@ -277,7 +269,6 @@ export function TestDebounce() {
             )}
           </div>
           
-          {/* Debounce Explanation */}
           <div className="mt-4 p-4 bg-blue-50 rounded-lg">
             <h4 className="font-semibold text-blue-900 mb-2">How Debouncing Works</h4>
             <ul className="text-sm text-blue-800 space-y-1">
@@ -290,7 +281,6 @@ export function TestDebounce() {
         </div>
       </div>
       
-      {/* Debug Info for W3M */}
       <div id="debounce-debug" className="sr-only">
 DEBUG: Debounce Test State
 ==========================

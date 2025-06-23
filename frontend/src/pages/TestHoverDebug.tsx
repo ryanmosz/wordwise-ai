@@ -1,14 +1,14 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { useSuggestionHover } from '../hooks/useSuggestionHover'
 
 export function TestHoverDebug() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  
-  // Use the hover hook
-  useSuggestionHover(containerRef)
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const suggestionRef = useRef<HTMLElement>(null);
+  const { setActive: setSuggestionActive, clear } = useSuggestionHover(suggestionRef, 'test-1');
   
   useEffect(() => {
-    console.log('TestHoverDebug mounted, ref:', containerRef.current)
+    console.log('TestHoverDebug mounted, ref:', suggestionRef.current)
   }, [])
   
   return (
@@ -19,7 +19,7 @@ export function TestHoverDebug() {
         <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 mb-8">
           <h2 className="text-xl font-semibold mb-4">Static Test (no editor)</h2>
           
-          <div ref={containerRef} className="space-y-4">
+          <div ref={suggestionRef} className="space-y-4">
             <p>
               This is a <span data-suggestion-id="1" data-suggestion-type="grammar" className="suggestion suggestion-grammar">grammar error</span> in the text.
             </p>

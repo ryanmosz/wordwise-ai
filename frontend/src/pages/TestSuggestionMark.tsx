@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { TextEditor, type TextEditorHandle } from '../components/editor/TextEditor'
 import type { SuggestionType } from '../types/suggestion'
 import { logSuggestionMarkVerification } from '../utils/verifySuggestionMark'
-import { useSuggestionHover } from '../hooks/useSuggestionHover'
+// import { useSuggestionHover } from '../hooks/useSuggestionHover'
 
 export function TestSuggestionMark() {
   const [content, setContent] = useState('<p>Click one of the test buttons below to load content with suggestion marks.</p>')
@@ -617,7 +617,7 @@ export function TestSuggestionMark() {
 
   // Helper function to find text position in ProseMirror document
   const findTextInDoc = (doc: any, searchText: string) => {
-    let pos = 0
+    let _pos = 0
     let found = false
     let startPos = -1
     let endPos = -1
@@ -637,7 +637,7 @@ export function TestSuggestionMark() {
         }
         
         // Check if search text spans multiple nodes
-        const remainingSearch = searchText.substring(0, text.length)
+        // const remainingSearch = searchText.substring(0, text.length)
         if (searchText.startsWith(text) && text.length < searchText.length) {
           // This might be the start of our search text
           // For now, we'll skip this complex case
@@ -674,7 +674,7 @@ export function TestSuggestionMark() {
     let fromPos = -1
     let toPos = -1
     
-    doc.descendants((node, pos) => {
+    doc.descendants((node: any, pos: number) => {
       if (node.isText && fromPos === -1) {
         const nodeEnd = currentPos + node.text.length
         

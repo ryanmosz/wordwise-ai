@@ -138,7 +138,7 @@ export function TestSuggestionHighlight() {
           <h2 className="text-xl font-semibold mb-4">Test Different Positions</h2>
           <div className="grid grid-cols-3 gap-4">
             <button
-              onClick={(e) => {
+              onClick={() => {
                 setClickPosition({ x: 50, y: 200 })
                 setSelectedSuggestion(mockSuggestions[0])
                 setShowCard(true)
@@ -148,7 +148,7 @@ export function TestSuggestionHighlight() {
               Top Left
             </button>
             <button
-              onClick={(e) => {
+              onClick={() => {
                 setClickPosition({ x: window.innerWidth / 2, y: 200 })
                 setSelectedSuggestion(mockSuggestions[1])
                 setShowCard(true)
@@ -158,7 +158,7 @@ export function TestSuggestionHighlight() {
               Top Center
             </button>
             <button
-              onClick={(e) => {
+              onClick={() => {
                 setClickPosition({ x: window.innerWidth - 100, y: 200 })
                 setSelectedSuggestion(mockSuggestions[2])
                 setShowCard(true)
@@ -168,7 +168,7 @@ export function TestSuggestionHighlight() {
               Top Right
             </button>
             <button
-              onClick={(e) => {
+              onClick={() => {
                 setClickPosition({ x: 50, y: window.innerHeight - 100 })
                 setSelectedSuggestion(mockSuggestions[3])
                 setShowCard(true)
@@ -178,7 +178,7 @@ export function TestSuggestionHighlight() {
               Bottom Left
             </button>
             <button
-              onClick={(e) => {
+              onClick={() => {
                 setClickPosition({ x: window.innerWidth / 2, y: window.innerHeight - 100 })
                 setSelectedSuggestion(mockSuggestions[0])
                 setShowCard(true)
@@ -188,7 +188,7 @@ export function TestSuggestionHighlight() {
               Bottom Center
             </button>
             <button
-              onClick={(e) => {
+              onClick={() => {
                 setClickPosition({ x: window.innerWidth - 100, y: window.innerHeight - 100 })
                 setSelectedSuggestion(mockSuggestions[1])
                 setShowCard(true)

@@ -84,7 +84,7 @@ export function TestLoadingStates() {
               <div className="space-y-2">
                 {suggestions.map((s, i) => (
                   <div key={i} className="p-2 bg-slate-50 rounded text-sm">
-                    <span className="font-medium">{s.type}:</span> {s.suggestion}
+                    <span className="font-medium">{s.type}:</span> {s.suggestionText}
                   </div>
                 ))}
               </div>
