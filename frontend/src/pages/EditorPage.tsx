@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useDocumentStore } from '../store/documentStore'
-import { TextEditor } from '../components/editor/TextEditor'
+import { TextEditor, type TextEditorHandle } from '../components/editor/TextEditor'
 import { DocumentSelector } from '../components/editor/DocumentSelector'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { useSuggestions } from '../hooks/useSuggestions'
@@ -25,12 +25,14 @@ export function EditorPage() {
   const [charCount, setCharCount] = useState(0)
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoadingDocument, setIsLoadingDocument] = useState(true)
+  const [plainText, setPlainText] = useState('')
+  const editorRef = useRef<TextEditorHandle>(null)
 
-  // Use the suggestions hook with current document content
+  // Use the suggestions hook with plain text instead of HTML
   const { suggestions, isLoading: isAnalyzing, error: analysisError } = useSuggestions({
-    text: currentDocument?.content || '',
+    text: plainText,
     documentId: currentDocument?.id || '',
-    enabled: !!currentDocument && (currentDocument.content?.length || 0) > 0
+    enabled: !!currentDocument && plainText.length > 0
   })
 
   // Add console log for debugging
@@ -71,6 +73,15 @@ export function EditorPage() {
     }
     initializeDocuments()
   }, [loadDocuments, cleanupEmptyDocuments, isInitialized])
+
+  // Initialize plain text when document loads or editor is ready
+  useEffect(() => {
+    if (editorRef.current && currentDocument) {
+      const text = editorRef.current.getText()
+      console.log('[Editor] Initializing plain text from editor:', text.length, 'chars')
+      setPlainText(text)
+    }
+  }, [currentDocument?.id])
 
   // Handle document selection after documents are loaded
   useEffect(() => {
@@ -147,22 +158,18 @@ export function EditorPage() {
   }
 
   const handleContentChange = (newContent: string) => {
-    // Calculate word and character count
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(newContent, 'text/html')
+    // Get plain text directly from the editor
+    const text = editorRef.current?.getText() || ''
     
-    // Get text content but preserve line breaks between block elements
-    const blocks = doc.body.querySelectorAll('p, h1, h2, h3, h4, h5, h6, div, li')
-    let text = ''
+    console.log('[Editor] Content changed:', {
+      htmlLength: newContent.length,
+      plainTextLength: text.length,
+      plainTextPreview: text.substring(0, 50) + (text.length > 50 ? '...' : ''),
+      htmlPreview: newContent.substring(0, 100) + (newContent.length > 100 ? '...' : '')
+    })
     
-    if (blocks.length > 0) {
-      // Extract text from each block element and join with spaces
-      const textArray = Array.from(blocks).map(block => (block.textContent || '').trim())
-      text = textArray.filter(t => t.length > 0).join(' ')
-    } else {
-      // Fallback for inline content
-      text = doc.body.textContent || ''
-    }
+    // Update plain text for suggestions
+    setPlainText(text)
     
     // Better word counting - split by any whitespace and filter out empty strings
     const words = text.trim().split(/\s+/).filter(word => word.length > 0)
@@ -255,7 +262,20 @@ export function EditorPage() {
           <div className="flex-1 p-8 overflow-y-auto">
             <div className="max-w-4xl mx-auto">
               {currentDocument ? (
-                <TextEditor content={currentDocument.content || ''} onChange={handleContentChange} />
+                <TextEditor 
+                  ref={editorRef}
+                  content={currentDocument.content || ''} 
+                  onChange={handleContentChange}
+                  suggestions={suggestions}
+                  onAcceptSuggestion={(suggestionId) => {
+                    console.log('Accepted suggestion:', suggestionId)
+                    // The useSuggestions hook will handle updating the state
+                  }}
+                  onRejectSuggestion={(suggestionId) => {
+                    console.log('Rejected suggestion:', suggestionId)
+                    // The useSuggestions hook will handle updating the state
+                  }}
+                />
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <div className="mb-8">

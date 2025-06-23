@@ -9,7 +9,7 @@ export default defineConfig({
     port: 3000,
     host: true,
     watch: {
-      ignored: ['**/test-editor.md']
-    }
+      usePolling: true,
+    },
   },
 })

@@ -35,4 +35,8 @@ You are a development assistant working inside the Cursor editor. As such, you a
 
 10. at the start of working on any task, review the handoff.mdc file, then delete its contents. once you believe a task is complete, update the handoff.mdc file describing what you just did. 
 
-11. Using the guidelines above, produce your plan to implement and verify task: 
+11. review @LOCAL_DEV_ENVIRONMENT.md it's really important to understand the local dev setup.
+
+12. if creating tasks for my manual verification in handoff.mdc. use this format with no space between the brackets: "- []"
+
+12. Using the guidelines above, produce your plan to implement and verify task: 

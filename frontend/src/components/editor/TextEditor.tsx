@@ -7,14 +7,21 @@ import { useEffect, useRef, useImperativeHandle, forwardRef, useState } from 're
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { SuggestionMark } from './SuggestionMark'
 import { useSuggestionHover } from '../../hooks/useSuggestionHover'
+import { SuggestionCard } from './SuggestionCard'
+import type { Suggestion } from '../../types/suggestion'
+import { characterToEditorPosition, getTextAtPosition } from '../../utils/editorUtils'
 
 interface TextEditorProps {
   content: string
   onChange: (content: string) => void
+  suggestions?: Suggestion[]
+  onAcceptSuggestion?: (suggestionId: string) => void
+  onRejectSuggestion?: (suggestionId: string) => void
 }
 
 export interface TextEditorHandle {
   getEditor: () => ReturnType<typeof useEditor>
+  getText: () => string
 }
 
 interface ToolbarProps {
@@ -200,9 +207,11 @@ function Toolbar({ editor }: ToolbarProps) {
   )
 }
 
-export const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ content, onChange }, ref) => {
+export const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ content, onChange, suggestions, onAcceptSuggestion, onRejectSuggestion }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [isFocused, setIsFocused] = useState(false)
+  const [selectedSuggestion, setSelectedSuggestion] = useState<Suggestion | null>(null)
+  const [cardPosition, setCardPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
+  const appliedSuggestionsRef = useRef<string>('') // Track applied suggestions to prevent duplicates
   
   const editor = useEditor({
     extensions: [
@@ -222,8 +231,6 @@ export const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ conte
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML())
     },
-    onFocus: () => setIsFocused(true),
-    onBlur: () => setIsFocused(false),
     editorProps: {
       attributes: {
         class: 'prose prose-lg max-w-none focus:outline-none min-h-[400px] p-4'
@@ -239,11 +246,12 @@ export const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ conte
   }, [])
 
   // Use the hover hook
-  const hoverControls = useSuggestionHover(containerRef)
+  useSuggestionHover(containerRef as React.RefObject<HTMLElement>)
 
   // Expose editor methods via ref
   useImperativeHandle(ref, () => ({
-    getEditor: () => editor
+    getEditor: () => editor,
+    getText: () => editor?.state.doc.textContent || ''
   }), [editor])
 
   useEffect(() => {
@@ -251,6 +259,274 @@ export const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ conte
       editor.commands.setContent(content)
     }
   }, [content, editor])
+
+  // Apply suggestion marks when suggestions change
+  useEffect(() => {
+    if (!editor) return
+    
+    // If no suggestions, clear any existing marks and reset tracking
+    if (!suggestions || suggestions.length === 0) {
+      if (appliedSuggestionsRef.current !== '') {
+        console.log('[TextEditor] No suggestions, clearing all marks')
+        editor.chain()
+          .focus()
+          .selectAll()
+          .unsetMark('suggestion')
+          .setTextSelection({ from: 0, to: 0 })
+          .run()
+        appliedSuggestionsRef.current = ''
+      }
+      return
+    }
+
+    // Create a unique identifier for the current set of suggestions
+    const suggestionsKey = suggestions
+      .map(s => `${s.id}-${s.startIndex}-${s.endIndex}`)
+      .join('|')
+    
+    // Skip if these suggestions have already been applied
+    if (appliedSuggestionsRef.current === suggestionsKey) {
+      console.log('[TextEditor] Suggestions already applied, skipping')
+      return
+    }
+
+    console.log('Applying suggestion marks:', suggestions.length)
+    appliedSuggestionsRef.current = suggestionsKey
+    
+    // Log editor state
+    const editorText = editor.state.doc.textContent
+    console.log('[TextEditor] Editor state:', {
+      totalLength: editorText.length,
+      preview: editorText.substring(0, 100) + (editorText.length > 100 ? '...' : ''),
+      nodeCount: editor.state.doc.content.childCount
+    })
+
+    // Clear existing suggestion marks from the entire document
+    editor.chain()
+      .focus()
+      .selectAll()
+      .unsetMark('suggestion')
+      .setTextSelection({ from: 0, to: 0 })  // Reset selection
+      .run()
+      
+    // Debug: Check if marks were actually cleared
+    let existingMarks = 0
+    editor.state.doc.descendants((node) => {
+      if (node.marks.length > 0) {
+        node.marks.forEach(mark => {
+          if (mark.type.name === 'suggestion') {
+            existingMarks++
+          }
+        })
+      }
+    })
+    console.log(`[TextEditor] Existing suggestion marks after clear: ${existingMarks}`)
+    
+    // If marks still exist, try a more thorough approach
+    if (existingMarks > 0) {
+      console.log('[TextEditor] Marks still exist after clear, attempting thorough removal...')
+      
+      // Remove marks from each text node
+      const { tr } = editor.state
+      editor.state.doc.descendants((node, pos) => {
+        if (node.isText && node.marks.length > 0) {
+          const hasSuggestionMark = node.marks.some(mark => mark.type.name === 'suggestion')
+          if (hasSuggestionMark) {
+            tr.removeMark(pos, pos + node.nodeSize, editor.schema.marks.suggestion)
+          }
+        }
+      })
+      
+      editor.view.dispatch(tr)
+      console.log('[TextEditor] Thorough mark removal completed')
+    }
+
+    // Apply new suggestion marks
+    suggestions.forEach((suggestion, index) => {
+      console.log(`[TextEditor] Processing suggestion [${index}]:`, {
+        id: suggestion.id,
+        originalText: suggestion.originalText,
+        charRange: `${suggestion.startIndex}-${suggestion.endIndex}`,
+        type: suggestion.type
+      })
+      
+      const position = characterToEditorPosition(editor, suggestion.startIndex, suggestion.endIndex)
+      if (!position) {
+        console.warn('Could not map position for suggestion:', suggestion.id)
+        return
+      }
+      
+      console.log(`[TextEditor] Mapped position:`, {
+        from: position.from,
+        to: position.to,
+        expectedLength: suggestion.originalText.length,
+        mappedLength: position.to - position.from
+      })
+
+      // Verify the text matches
+      const textAtPosition = getTextAtPosition(editor, position.from, position.to)
+      if (textAtPosition !== suggestion.originalText) {
+        console.warn('Text mismatch for suggestion:', {
+          id: suggestion.id,
+          expected: suggestion.originalText,
+          actual: textAtPosition,
+          position
+        })
+        
+        // Try to find the text in the document
+        const searchIndex = editorText.indexOf(suggestion.originalText)
+        if (searchIndex !== -1) {
+          console.log(`[TextEditor] Found text at different position: ${searchIndex} (expected: ${suggestion.startIndex})`)
+        }
+        
+        return
+      }
+      
+      console.log(`[TextEditor] Text verified, applying mark for suggestion [${index}]`)
+
+      // Apply the suggestion mark
+      editor.chain()
+        .focus()
+        .setTextSelection({ from: position.from, to: position.to })
+        .setMark('suggestion', {
+          suggestionId: suggestion.id,
+          suggestionType: suggestion.type
+        })
+        .run()
+        
+      console.log(`[TextEditor] Mark applied successfully for suggestion [${index}]`)
+    })
+
+    // Reset selection to end of document
+    editor.commands.focus('end')
+    
+    console.log('[TextEditor] All suggestion marks processed')
+  }, [suggestions, editor])
+
+  // Handle click on suggestions
+  const handleContainerClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement
+    
+    // Check if we clicked on a suggestion span
+    const suggestionElement = target.closest('[data-suggestion-id]') as HTMLElement
+    if (!suggestionElement) {
+      // Clicked outside of suggestion, close card if open
+      if (selectedSuggestion) {
+        setSelectedSuggestion(null)
+      }
+      return
+    }
+
+    const suggestionId = suggestionElement.getAttribute('data-suggestion-id')
+    if (!suggestionId || !suggestions) return
+
+    // Find the suggestion
+    const suggestion = suggestions.find(s => s.id === suggestionId)
+    if (!suggestion) {
+      console.warn('Suggestion not found:', suggestionId)
+      return
+    }
+
+    // Calculate position for the card
+    const rect = suggestionElement.getBoundingClientRect()
+    setCardPosition({
+      x: rect.left,
+      y: rect.bottom + 5 // Position below the text
+    })
+    setSelectedSuggestion(suggestion)
+  }
+
+  // Handle accept/reject
+  const handleAcceptSuggestion = () => {
+    if (!selectedSuggestion || !editor) return
+
+    console.log('[TextEditor] Accepting suggestion:', {
+      id: selectedSuggestion.id,
+      originalText: selectedSuggestion.originalText,
+      suggestionText: selectedSuggestion.suggestionText,
+      range: `${selectedSuggestion.startIndex}-${selectedSuggestion.endIndex}`
+    })
+
+    // Find the position of the suggestion
+    const position = characterToEditorPosition(
+      editor,
+      selectedSuggestion.startIndex,
+      selectedSuggestion.endIndex
+    )
+    if (!position) {
+      console.error('[TextEditor] Could not find position for accepted suggestion')
+      return
+    }
+    
+    console.log('[TextEditor] Replacing text at positions:', position)
+
+    // First, remove the suggestion mark from the selected range
+    // Use a transaction to ensure the mark is removed
+    const { tr } = editor.state
+    tr.removeMark(position.from, position.to, editor.schema.marks.suggestion)
+    editor.view.dispatch(tr)
+      
+    console.log('[TextEditor] Mark removed from selection using transaction')
+
+    // Then replace the text
+    editor.chain()
+      .focus()
+      .setTextSelection({ from: position.from, to: position.to })
+      .insertContent(selectedSuggestion.suggestionText)
+      .run()
+      
+    console.log('[TextEditor] Text replaced')
+    
+    // Force update the applied suggestions tracking to trigger re-analysis
+    appliedSuggestionsRef.current = ''
+
+    // Call the parent's accept handler
+    onAcceptSuggestion?.(selectedSuggestion.id)
+    
+    // Close the card
+    setSelectedSuggestion(null)
+  }
+
+  const handleRejectSuggestion = () => {
+    if (!selectedSuggestion || !editor) return
+
+    console.log('[TextEditor] Rejecting suggestion:', {
+      id: selectedSuggestion.id,
+      originalText: selectedSuggestion.originalText,
+      range: `${selectedSuggestion.startIndex}-${selectedSuggestion.endIndex}`
+    })
+
+    // Find the position of the suggestion
+    const position = characterToEditorPosition(
+      editor,
+      selectedSuggestion.startIndex,
+      selectedSuggestion.endIndex
+    )
+    if (!position) {
+      console.error('[TextEditor] Could not find position for rejected suggestion')
+      return
+    }
+    
+    console.log('[TextEditor] Removing mark at positions:', position)
+
+    // Remove the mark
+    editor.chain()
+      .focus()
+      .setTextSelection({ from: position.from, to: position.to })
+      .unsetMark('suggestion')
+      .run()
+      
+    console.log('[TextEditor] Mark removed')
+    
+    // Force update the applied suggestions tracking
+    appliedSuggestionsRef.current = ''
+
+    // Call the parent's reject handler
+    onRejectSuggestion?.(selectedSuggestion.id)
+    
+    // Close the card
+    setSelectedSuggestion(null)
+  }
 
   if (!editor) {
     return (
@@ -266,9 +542,20 @@ export const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ conte
   return (
     <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
       <Toolbar editor={editor} />
-      <div ref={containerRef} className="p-6">
+      <div ref={containerRef} className="p-6" onClick={handleContainerClick}>
         <EditorContent editor={editor} className="prose prose-lg max-w-none" />
       </div>
+      
+      {/* Render SuggestionCard when a suggestion is selected */}
+      {selectedSuggestion && (
+        <SuggestionCard
+          suggestion={selectedSuggestion}
+          position={cardPosition}
+          onAccept={handleAcceptSuggestion}
+          onReject={handleRejectSuggestion}
+          onClose={() => setSelectedSuggestion(null)}
+        />
+      )}
     </div>
   )
 })

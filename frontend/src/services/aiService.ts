@@ -57,6 +57,8 @@ class AIService {
         brandTone: options.userSettings.brandTone
       })
       
+      console.log('[AIService] Full text being analyzed:', options.text)
+      
       const response = await fetch(`${this.baseUrl}/functions/v1/analyze-text`, {
         method: 'POST',
         headers: {
@@ -79,6 +81,14 @@ class AIService {
         ok: response.ok,
         data: data
       })
+      
+      // Log detailed suggestion info
+      if ('suggestions' in data && Array.isArray(data.suggestions)) {
+        console.log('[AIService] Suggestions detail:')
+        data.suggestions.forEach((s, i) => {
+          console.log(`  [${i}] "${s.originalText}" -> "${s.suggestionText}" at ${s.startIndex}-${s.endIndex} (${s.type})`)
+        })
+      }
       
       if (!response.ok) {
         // Handle specific error cases
@@ -106,7 +116,7 @@ class AIService {
         types: data.suggestions.map(s => s.type)
       })
       
-      return data
+      return data as AnalyzeTextResponse
       
     } catch (error) {
       // Handle abort errors

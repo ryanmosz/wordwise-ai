@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import type { Suggestion } from '../../types'
 import { getColorScheme, getSuggestionIcon } from '../../utils/suggestionColors'
 

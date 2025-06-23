@@ -1,5 +1,4 @@
 import { Mark, mergeAttributes } from '@tiptap/core'
-import type { SuggestionType } from '../../types/suggestion'
 
 export interface SuggestionMarkOptions {
   HTMLAttributes: Record<string, any>
@@ -131,15 +130,15 @@ export const SuggestionMark = Mark.create<SuggestionMarkOptions>({
 
   addCommands() {
     return {
-      setSuggestionMark: (attributes: { suggestionId: string; suggestionType: string }) => ({ commands }) => {
+      setSuggestionMark: (attributes: { suggestionId: string; suggestionType: string }) => ({ commands }: any) => {
         return commands.setMark(this.name, attributes)
       },
-      toggleSuggestionMark: (attributes: { suggestionId: string; suggestionType: string }) => ({ commands }) => {
+      toggleSuggestionMark: (attributes: { suggestionId: string; suggestionType: string }) => ({ commands }: any) => {
         return commands.toggleMark(this.name, attributes)
       },
-      unsetSuggestionMark: () => ({ commands }) => {
+      unsetSuggestionMark: () => ({ commands }: any) => {
         return commands.unsetMark(this.name)
       },
-    }
+    } as any
   },
 }) 

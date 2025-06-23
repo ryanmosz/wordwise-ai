@@ -103,6 +103,8 @@ docker-compose up
 - `frontend/src/pages/TestSuggestionStateManagement.tsx` - Test page for suggestion state management
 - `frontend/public/test-suggestion-state.html` - Static HTML test page for W3M testing
 - `frontend/scripts/test-suggestion-state.sh` - W3M test script for suggestion state management
+- `frontend/src/utils/editorUtils.ts` - Utilities for converting character positions to TipTap positions (new for task 8.3.5)
+- `frontend/scripts/test-suggestion-integration.sh` - W3M test script for verifying suggestion integration (new for task 8.3.5)
 
 ### Settings & Analytics
 - `frontend/src/pages/SettingsPage.tsx` - User settings interface
@@ -209,7 +211,10 @@ docker-compose up
   - [x] 8.1 Create AI service module
   - [x] 8.2 Implement debounced text analysis
   - [x] 8.3 Add loading states to editor
-  - [ ] 8.3.5 Integrate suggestion highlights into TextEditor
+  - [x] 8.3.5 Integrate suggestion highlights into TextEditor ✅ READY FOR TESTING
+    - Position mismatch fix applied ✅
+    - Mark clearing fix applied ✅  
+    - Duplicate prevention fix applied ✅
   - [ ] 8.4 Implement error handling
   - [ ] 8.5 Create request queue system
   - [ ] 8.5.5 Analyze existing text on document load

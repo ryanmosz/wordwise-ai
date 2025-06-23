@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { debounce } from '../utils/debounce'
-import type { Suggestion, SuggestionType } from '../types/suggestion'
+import type { Suggestion } from '../types/suggestion'
 import { useDocumentStore } from '../store/documentStore'
 import { aiService } from '../services/aiService'
 
@@ -55,8 +55,7 @@ export function useSuggestions({
     suggestionStatus,
     addSuggestions, 
     updateSuggestionStatus, 
-    clearSuggestions,
-    getSuggestionById 
+    clearSuggestions
   } = useDocumentStore()
   
   // Convert Map to array for the return value
@@ -109,6 +108,7 @@ export function useSuggestions({
       
       try {
         console.log('[useSuggestions] Starting analysis for text length:', text.length)
+        console.log('[useSuggestions] Text preview:', text.substring(0, 100) + (text.length > 100 ? '...' : ''))
         
         // Use the real AI service with current refs
         const result = await aiService.analyzeText({
@@ -128,10 +128,42 @@ export function useSuggestions({
             id: suggestion.id || `suggestion-${Date.now()}-${index}`
           }))
           
-          addSuggestions(suggestionsWithIds)
+          // Fix incorrect positions from AI by validating against originalText
+          const fixedSuggestions = suggestionsWithIds.map(suggestion => {
+            const correctEndIndex = suggestion.startIndex + suggestion.originalText.length
+            
+            // Verify the text at the claimed position matches originalText
+            const textAtPosition = text.substring(suggestion.startIndex, correctEndIndex)
+            
+            if (textAtPosition !== suggestion.originalText) {
+              console.warn(`[useSuggestions] Position mismatch! AI claims "${suggestion.originalText}" is at ${suggestion.startIndex}-${suggestion.endIndex}, but found "${textAtPosition}"`)
+              
+              // Try to find the actual position
+              const actualStart = text.indexOf(suggestion.originalText)
+              if (actualStart !== -1) {
+                console.log(`[useSuggestions] Found actual position at ${actualStart}-${actualStart + suggestion.originalText.length}`)
+                return {
+                  ...suggestion,
+                  startIndex: actualStart,
+                  endIndex: actualStart + suggestion.originalText.length
+                }
+              }
+            } else if (suggestion.endIndex !== correctEndIndex) {
+              // Just fix the endIndex if text matches but endIndex is wrong
+              console.log(`[useSuggestions] Fixing endIndex for "${suggestion.originalText}": AI said ${suggestion.startIndex}-${suggestion.endIndex}, should be ${suggestion.startIndex}-${correctEndIndex}`)
+              return {
+                ...suggestion,
+                endIndex: correctEndIndex
+              }
+            }
+            
+            return suggestion
+          })
+          
+          addSuggestions(fixedSuggestions)
           lastFetchTimeRef.current = new Date().toISOString()
           debounceMetricsRef.current.requestsCompleted++
-          console.log('[useSuggestions] Analysis complete, suggestions:', suggestionsWithIds.length)
+          console.log('[useSuggestions] Analysis complete, suggestions:', fixedSuggestions.length)
         } else {
           // This request was superseded by a newer one
           debounceMetricsRef.current.requestsCancelled++
