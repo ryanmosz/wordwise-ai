@@ -617,7 +617,6 @@ export function TestSuggestionMark() {
 
   // Helper function to find text position in ProseMirror document
   const findTextInDoc = (doc: any, searchText: string) => {
-    let _pos = 0
     let found = false
     let startPos = -1
     let endPos = -1
@@ -688,7 +687,7 @@ export function TestSuggestionMark() {
           if (foundText === searchText) {
             // Check for overlaps
             let hasOverlap = false
-            doc.nodesBetween(fromPos, toPos, (node, nodePos) => {
+            doc.nodesBetween(fromPos, toPos, (node: any, _nodePos: number) => {
               if (node.marks.some((mark: any) => mark.type.name === 'suggestion')) {
                 hasOverlap = true
                 return false
@@ -868,7 +867,7 @@ export function TestSuggestionMark() {
       
       // First, let's debug what text we actually have
       addDebugMessage('\n📝 Document structure:')
-      editor.state.doc.descendants((node, pos) => {
+      editor.state.doc.descendants((node: any, pos: number) => {
         if (node.type.name === 'paragraph' && node.textContent.trim()) {
           addDebugMessage(`  Paragraph at ${pos}: "${node.textContent}"`)
         }

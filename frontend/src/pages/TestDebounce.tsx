@@ -129,20 +129,6 @@ export function TestDebounce() {
     return `${Math.floor(seconds / 60)}m ago`
   }
   
-  const handleReset = () => {
-    setText('');
-    setRequestLogs([]);
-    setKeystrokes(0);
-    setEnabled(true);
-    // Reset the analyze function
-    requestIdRef.current = 0;
-    activeRequestRef.current = null;
-    if (pendingTimeoutRef.current) {
-      clearTimeout(pendingTimeoutRef.current);
-      pendingTimeoutRef.current = null;
-    }
-  };
-  
   return (
     <div className="max-w-6xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Debounce Testing</h1>

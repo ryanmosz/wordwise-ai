@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import type { SuggestionType } from '../types/suggestion'
-import { getSuggestionColors } from '../utils/suggestionColors'
+import { getColorScheme } from '../utils/suggestionColors'
 import { SuggestionHighlight } from '../components/editor/SuggestionHighlight'
 import { verifySuggestionColors } from '../utils/verifySuggestionColors'
 
@@ -25,7 +25,7 @@ export function TestSuggestionColors() {
         <h2 className="text-xl font-semibold mb-4">Color Scheme Reference</h2>
         <div className="space-y-4">
           {suggestionTypes.map(type => {
-            const scheme = getSuggestionColors(type)
+            const scheme = getColorScheme(type)
             return (
               <div key={type} className="flex items-center gap-4 p-3 rounded border">
                 <span className="text-2xl">{scheme.icon}</span>
