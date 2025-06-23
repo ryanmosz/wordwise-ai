@@ -1,0 +1,17 @@
+WordWise AI Test Document - All Error Types
+
+1. TONE ADJUSTMENT: Hey guys! Check out our awesome product!!! (Too casual for professional audience)
+
+2. PERSUASIVE LANGUAGE: Our product is good and helps with tasks. (Weak, non-compelling language)
+
+3. CONCISENESS: At this point in time, we are currently in the process of developing new features. (Wordy)
+
+4. HEADLINE OPTIMIZATION: Product Update (Generic, unengaging headline)
+
+5. READABILITY GUIDANCE: The utilization of comprehensive analytical methodologies facilitates the optimization of organizational workflows. (Too complex)
+
+6. VOCABULARY VARIATION: Our unique product has unique features that make it unique. (Repetitive)
+
+7. A/B ALTERNATIVES: Buy Now (Could test different CTA variations)
+
+8. GRAMMAR & SPELLING: This are a great oppertunity for evryone. (Multiple errors) 

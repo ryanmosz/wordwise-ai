@@ -139,6 +139,7 @@ span.suggestion.suggestion-headline {
 /* Add a class for JavaScript-controlled hover state */
 
 /* Test that styles are loading */
+/* REMOVED - This was for testing only, not for production
 body::after {
   content: 'CSS v20 - Comprehensive edge case support';
   position: fixed;
@@ -151,6 +152,7 @@ body::after {
   z-index: 9999;
   pointer-events: none;
 }
+*/
 
 /* Simpler approach - apply background to any suggestion with hover class */
 /* REMOVED - This was overriding specific type colors

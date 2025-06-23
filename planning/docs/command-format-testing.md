@@ -41,5 +41,9 @@ State clearly: Should we perform additional testing now or move forward? Justify
 
 Remember: We aim for appropriate testing, not exhaustive testing. Balance quality assurance with development momentum. We don't want to hit the point of diminishing returns.
 
+
+### 6. Next Steps
 If you believe further testing is necessary commence testing now. 
+
+If you do not believe further testing is necessary now then create a new git commit on the current branch. Leave no files unstaged or changes unstaged.
 

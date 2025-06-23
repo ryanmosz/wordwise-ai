@@ -211,6 +211,8 @@ export const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ conte
           levels: [1, 2, 3]
         }
       }),
+      Highlight,
+      Underline,
       Placeholder.configure({
         placeholder: 'Start writing...'
       }),
@@ -263,54 +265,7 @@ export const TextEditor = forwardRef<TextEditorHandle, TextEditorProps>(({ conte
 
   return (
     <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-      <div className="border-b px-4 py-2 bg-gray-50 flex items-center gap-2">
-        <button
-          onClick={() => editor?.chain().focus().toggleBold().run()}
-          className={`px-3 py-1 rounded ${
-            editor?.isActive('bold') ? 'bg-gray-200' : 'hover:bg-gray-100'
-          }`}
-          disabled={!editor}
-        >
-          <strong>B</strong>
-        </button>
-        <button
-          onClick={() => editor?.chain().focus().toggleItalic().run()}
-          className={`px-3 py-1 rounded ${
-            editor?.isActive('italic') ? 'bg-gray-200' : 'hover:bg-gray-100'
-          }`}
-          disabled={!editor}
-        >
-          <em>I</em>
-        </button>
-        <button
-          onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`px-3 py-1 rounded ${
-            editor?.isActive('heading', { level: 2 }) ? 'bg-gray-200' : 'hover:bg-gray-100'
-          }`}
-          disabled={!editor}
-        >
-          H2
-        </button>
-        {/* Debug button */}
-        {process.env.NODE_ENV === 'development' && (
-          <button
-            onClick={() => {
-              console.log('🔍 DEBUG: Editor DOM')
-              const editorEl = containerRef.current?.querySelector('.ProseMirror')
-              if (editorEl) {
-                const suggestions = editorEl.querySelectorAll('[data-suggestion-id]')
-                console.log(`Found ${suggestions.length} suggestions:`)
-                suggestions.forEach((s, i) => {
-                  console.log(`${i}: ID=${s.getAttribute('data-suggestion-id')}, Type=${s.getAttribute('data-suggestion-type')}`)
-                })
-              }
-            }}
-            className="ml-auto px-3 py-1 rounded bg-gray-600 text-white text-xs hover:bg-gray-700"
-          >
-            Debug DOM
-          </button>
-        )}
-      </div>
+      <Toolbar editor={editor} />
       <div ref={containerRef} className="p-6">
         <EditorContent editor={editor} className="prose prose-lg max-w-none" />
       </div>

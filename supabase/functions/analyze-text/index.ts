@@ -112,9 +112,25 @@ function parseSuggestions(gptResponse: string): Suggestion[] {
       return parsed.suggestions
     }
     
+    // Check if it's wrapped in any other common property names
+    const possibleKeys = ['data', 'results', 'items', 'list']
+    for (const key of possibleKeys) {
+      if (parsed[key] && Array.isArray(parsed[key])) {
+        console.log(`Found array under key: ${key}`)
+        return parsed[key]
+      }
+    }
+    
+    // If it's an object with a single property that's an array, use that
+    const keys = Object.keys(parsed)
+    if (keys.length === 1 && Array.isArray(parsed[keys[0]])) {
+      console.log(`Found array under single key: ${keys[0]}`)
+      return parsed[keys[0]]
+    }
+    
     // Otherwise, assume the response IS the array
     if (!Array.isArray(parsed)) {
-      console.error('GPT response is not an array and has no suggestions property')
+      console.error('GPT response is not an array and has no suggestions property:', parsed)
       return []
     }
     
@@ -223,9 +239,16 @@ Deno.serve(async (req) => {
     const suggestions = parseSuggestions(content)
     console.log(`Parsed ${suggestions.length} valid suggestions`)
 
-    // Return the suggestions
+    // Return the suggestions with debug info
     return new Response(
-      JSON.stringify({ suggestions }),
+      JSON.stringify({ 
+        suggestions,
+        debug: {
+          rawResponse: content,
+          parsedCount: suggestions.length,
+          textLength: text.length
+        }
+      }),
       { 
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

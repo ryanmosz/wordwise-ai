@@ -985,6 +985,17 @@ Connect the React editor to the Supabase edge function, enabling real-time AI su
    - Disable suggestion clicks during loading
    ```
 
+3.5. Integrate suggestion highlights into TextEditor:
+   ```
+   - Add TipTap custom mark extension for suggestions
+   - Apply suggestion marks when suggestions arrive from AI
+   - Map suggestions to text positions with proper colors
+   - Handle click/hover on marked text to show SuggestionCard
+   - Connect accept/reject actions to update text and marks
+   - Update marks when text changes or positions shift
+   - Add CSS for different suggestion type underlines
+   ```
+
 4. Implement error handling:
    ```
    Error scenarios to handle:
@@ -1010,18 +1021,60 @@ Connect the React editor to the Supabase edge function, enabling real-time AI su
    - Limit request size to 2000 words
    ```
 
+7. Create suggestions pane (right sidebar):
+   ```
+   - Simple fixed panel showing all suggestions
+   - Grouped by 6 user story categories:
+     - Tone Adjustment
+     - Persuasive Language
+     - Conciseness
+     - Headline Optimization
+     - Readability Guidance
+     - Vocabulary Variation
+   - Click to navigate to suggestion in editor
+   - Accept/reject buttons on each item
+   - Shows count per category
+   ```
+
+8. Analyze existing text on document load:
+   ```
+   - Run AI analysis when document opens
+   - Show suggestions for existing content
+   - Create test document with each error type
+   - Different loading message for initial analysis
+   - Handle document switching gracefully
+   ```
+
+9. Verify document persistence:
+   ```
+   - Ensure auto-save works reliably
+   - Test document loading across sessions
+   - Handle offline/online transitions
+   - Show save status indicators
+   ```
+
+10. Full integration testing:
+    ```
+    - Test complete user journey
+    - Verify all features work together
+    - Check performance with real usage
+    - Ensure no console errors
+    ```
+
 #### Test Phase
 
-1. Type a paragraph with errors
+1. Type a paragraph with errors (e.g., "This are a test")
 2. Stop typing and count to 2
 3. Verify "Analyzing..." appears
-4. Verify suggestions appear within 1-2 seconds
-5. Continue typing immediately
-6. Verify previous analysis cancels
-7. Disconnect internet (turn off WiFi)
-8. Try typing and verify error message
-9. Reconnect internet
-10. Verify system recovers and works again
+4. Verify suggestions appear within 1-2 seconds as colored underlines
+5. Click on underlined text - verify SuggestionCard appears
+6. Test Accept button - verify text updates and underline disappears
+7. Test Reject button - verify underline disappears but text unchanged
+8. Continue typing immediately - verify previous analysis cancels
+9. Disconnect internet (turn off WiFi)
+10. Try typing and verify error message appears
+11. Reconnect internet
+12. Verify system recovers and works again with new suggestions
 
 ---
 

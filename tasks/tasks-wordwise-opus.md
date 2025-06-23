@@ -208,10 +208,15 @@ docker-compose up
 - [ ] 8.0 Frontend-Backend Integration
   - [x] 8.1 Create AI service module
   - [x] 8.2 Implement debounced text analysis
-  - [ ] 8.3 Add loading states to editor
+  - [x] 8.3 Add loading states to editor
+  - [ ] 8.3.5 Integrate suggestion highlights into TextEditor
   - [ ] 8.4 Implement error handling
   - [ ] 8.5 Create request queue system
+  - [ ] 8.5.5 Analyze existing text on document load
   - [ ] 8.6 Add performance optimizations
+  - [ ] 8.7 Create suggestions pane (right sidebar)
+  - [ ] 8.9 Verify document persistence and auto-save
+  - [ ] 8.10 Full integration test of core features
 
 - [ ] 9.0 Brand Voice Settings
   - [ ] 9.1 Create SettingsPage component
@@ -2266,6 +2271,220 @@ Add subtle overlay to editor:
 
 ---
 
+### Task 8.3.5: Integrate suggestion highlights into TextEditor
+
+**Goal**: Connect all the suggestion components to the TextEditor so that analyzed text shows colored underlines and clicking/hovering displays the SuggestionCard with accept/reject functionality.
+
+**Implementation**:
+1. Add TipTap custom mark extension:
+```typescript
+// In TextEditor.tsx or separate file
+import { Mark } from '@tiptap/core'
+
+export const SuggestionMark = Mark.create({
+  name: 'suggestion',
+  
+  addAttributes() {
+    return {
+      suggestionId: { default: null },
+      suggestionType: { default: 'grammar' },
+      color: { default: 'red' }
+    }
+  },
+  
+  parseHTML() {
+    return [{
+      tag: 'span[data-suggestion]',
+    }]
+  },
+  
+  renderHTML({ HTMLAttributes }) {
+    return ['span', {
+      ...HTMLAttributes,
+      'data-suggestion': HTMLAttributes.suggestionId,
+      class: `suggestion-${HTMLAttributes.suggestionType}`,
+      style: `border-bottom: 2px solid ${HTMLAttributes.color}; cursor: pointer;`
+    }, 0]
+  }
+})
+```
+
+2. Update TextEditor to use suggestions:
+```typescript
+// In TextEditor.tsx
+import { SuggestionMark } from './SuggestionMark'
+import { useSuggestions } from '@/hooks/useSuggestions'
+import { SuggestionCard } from './SuggestionCard'
+
+export function TextEditor({ document }) {
+  const [selectedSuggestion, setSelectedSuggestion] = useState(null)
+  const [cardPosition, setCardPosition] = useState({ x: 0, y: 0 })
+  
+  // Get suggestions from hook
+  const { suggestions, acceptSuggestion, rejectSuggestion } = useSuggestions({
+    text: editor?.getText() || '',
+    documentId: document.id,
+    userSettings: { /* from auth store */ }
+  })
+  
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Highlight,
+      Underline,
+      SuggestionMark, // Add custom mark
+    ],
+    content: document.content,
+    onUpdate: ({ editor }) => {
+      // Update document content
+      updateDocument(editor.getHTML())
+    }
+  })
+  
+  // Apply suggestion marks when suggestions change
+  useEffect(() => {
+    if (!editor || !suggestions.length) return
+    
+    // Clear existing marks
+    editor.chain()
+      .focus()
+      .unsetMark('suggestion')
+      .run()
+    
+    // Apply new marks
+    suggestions.forEach(suggestion => {
+      editor.chain()
+        .focus()
+        .setTextSelection({ 
+          from: suggestion.startIndex, 
+          to: suggestion.endIndex 
+        })
+        .setMark('suggestion', {
+          suggestionId: suggestion.id,
+          suggestionType: suggestion.type,
+          color: getSuggestionColor(suggestion.type)
+        })
+        .run()
+    })
+  }, [suggestions, editor])
+  
+  // Handle click on suggestion
+  const handleSuggestionClick = (event) => {
+    const target = event.target as HTMLElement
+    if (target.dataset.suggestion) {
+      const suggestion = suggestions.find(s => s.id === target.dataset.suggestion)
+      if (suggestion) {
+        const rect = target.getBoundingClientRect()
+        setCardPosition({ x: rect.left, y: rect.bottom + 5 })
+        setSelectedSuggestion(suggestion)
+      }
+    }
+  }
+  
+  return (
+    <div onClick={handleSuggestionClick}>
+      <EditorContent editor={editor} />
+      
+      {selectedSuggestion && (
+        <SuggestionCard
+          suggestion={selectedSuggestion}
+          position={cardPosition}
+          onAccept={async () => {
+            await acceptSuggestion(selectedSuggestion.id)
+            // Apply text change
+            editor.chain()
+              .focus()
+              .setTextSelection({
+                from: selectedSuggestion.startIndex,
+                to: selectedSuggestion.endIndex
+              })
+              .insertContent(selectedSuggestion.suggestionText)
+              .unsetMark('suggestion')
+              .run()
+            setSelectedSuggestion(null)
+          }}
+          onReject={async () => {
+            await rejectSuggestion(selectedSuggestion.id)
+            // Remove mark
+            editor.chain()
+              .focus()
+              .setTextSelection({
+                from: selectedSuggestion.startIndex,
+                to: selectedSuggestion.endIndex
+              })
+              .unsetMark('suggestion')
+              .run()
+            setSelectedSuggestion(null)
+          }}
+          onClose={() => setSelectedSuggestion(null)}
+        />
+      )}
+    </div>
+  )
+}
+```
+
+3. Add CSS for suggestion underlines:
+```css
+/* In index.css or component CSS */
+.suggestion-grammar {
+  border-bottom: 2px solid #ef4444; /* red */
+}
+
+.suggestion-tone {
+  border-bottom: 2px solid #eab308; /* yellow */
+}
+
+.suggestion-persuasive {
+  border-bottom: 2px solid #3b82f6; /* blue */
+}
+
+.suggestion-headline,
+.suggestion-readability {
+  border-bottom: 2px solid #22c55e; /* green */
+}
+
+.suggestion-vocabulary {
+  border-bottom: 2px solid #a855f7; /* purple */
+}
+
+.suggestion-ab_test {
+  border-bottom: 2px solid #f97316; /* orange */
+}
+```
+
+4. Update suggestion color helper:
+```typescript
+// In utils/suggestionColors.ts
+export function getSuggestionColor(type: string): string {
+  const colors = {
+    grammar: '#ef4444',
+    tone: '#eab308',
+    persuasive: '#3b82f6',
+    headline: '#22c55e',
+    readability: '#22c55e',
+    vocabulary: '#a855f7',
+    ab_test: '#f97316',
+    conciseness: '#06b6d4'
+  }
+  return colors[type] || '#6b7280'
+}
+```
+
+**Test**:
+1. Type text with errors (e.g., "This are a test")
+2. Wait 2 seconds for analysis
+3. Verify text shows colored underlines based on suggestion type
+4. Click on underlined text
+5. Verify SuggestionCard appears with correct suggestion
+6. Click Accept - text updates and underline disappears
+7. Click another suggestion and Reject - underline disappears, text unchanged
+8. Verify different suggestion types show different colors
+9. Edit text after accepting - verify positions update correctly
+10. Type new text - verify new suggestions appear
+
+---
+
 ### Task 8.4: Implement error handling
 
 **Goal**: Gracefully handle network errors and API failures with user-friendly messages.
@@ -2377,6 +2596,116 @@ class RequestQueue {
 
 ---
 
+### Task 8.5.5: Analyze existing text on document load
+
+**Goal**: Ensure AI analysis runs automatically when a document is loaded, not just when typing new text, so users can see suggestions for their existing content immediately. This allows us to create test documents with examples of each error type.
+
+**Implementation**:
+1. Update useSuggestions hook to analyze on mount:
+```typescript
+// In useSuggestions.ts, add initial analysis
+export function useSuggestions({ text, documentId, userSettings }) {
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([])
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [hasAnalyzedInitial, setHasAnalyzedInitial] = useState(false)
+  
+  // ... existing debounced analyze function ...
+  
+  // Analyze initial content when document loads
+  useEffect(() => {
+    if (text && text.length > 10 && !hasAnalyzedInitial) {
+      setHasAnalyzedInitial(true)
+      analyzeText(text) // Run analysis immediately for existing content
+    }
+  }, [text, hasAnalyzedInitial])
+  
+  // Continue to analyze on text changes
+  useEffect(() => {
+    if (hasAnalyzedInitial) {
+      analyzeText(text) // This is still debounced
+    }
+  }, [text, analyzeText, hasAnalyzedInitial])
+  
+  return { suggestions, isAnalyzing }
+}
+```
+
+2. Update TextEditor to trigger analysis on document change:
+```typescript
+// In TextEditor.tsx
+export function TextEditor({ document }) {
+  const [initialContent, setInitialContent] = useState(document?.content || '')
+  
+  // Reset analysis when switching documents
+  useEffect(() => {
+    if (document) {
+      setInitialContent(document.content)
+      // Force re-mount of useSuggestions hook
+    }
+  }, [document.id])
+  
+  const { suggestions, isAnalyzing } = useSuggestions({
+    text: editor?.getText() || initialContent,
+    documentId: document.id,
+    userSettings: getUserSettings()
+  })
+  
+  // ... rest of component
+}
+```
+
+3. Add loading state for initial analysis:
+```typescript
+// Show different message for initial load vs typing
+const loadingMessage = suggestions.length === 0 && isAnalyzing
+  ? "Analyzing document..."
+  : "Analyzing changes..."
+
+// In the UI
+{isAnalyzing && (
+  <div className="flex items-center gap-2">
+    <LoadingSpinner size="sm" />
+    <span className="text-sm text-blue-600">{loadingMessage}</span>
+  </div>
+)}
+```
+
+4. Create test document content:
+```typescript
+// Sample document with one example of each error type
+const TEST_DOCUMENT_CONTENT = `
+1. TONE ADJUSTMENT: Hey guys! Check out our awesome product!!! (Too casual for professional audience)
+
+2. PERSUASIVE LANGUAGE: Our product is good and helps with tasks. (Weak, non-compelling language)
+
+3. CONCISENESS: At this point in time, we are currently in the process of developing new features. (Wordy)
+
+4. HEADLINE OPTIMIZATION: Product Update (Generic, unengaging headline)
+
+5. READABILITY GUIDANCE: The utilization of comprehensive analytical methodologies facilitates the optimization of organizational workflows. (Too complex)
+
+6. VOCABULARY VARIATION: Our unique product has unique features that make it unique. (Repetitive)
+
+7. A/B ALTERNATIVES: Buy Now (Could test different CTA variations)
+
+8. GRAMMAR & SPELLING: This are a great oppertunity for evryone. (Multiple errors)
+`
+```
+
+**Test**:
+1. Create document with the test content above
+2. Save and navigate away
+3. Return to document - see "Analyzing document..." immediately
+4. Suggestions appear without typing anything
+5. Verify each error type shows appropriate suggestion
+6. Each suggestion has correct color coding
+7. Switch between documents - each analyzes on load
+8. Empty document shows no analysis
+9. Type new text - continues to analyze changes
+10. Performance is acceptable with test document
+
+---
+
 ### Task 8.6: Add performance optimizations
 
 **Goal**: Optimize analysis to reduce API calls and improve response time.
@@ -2443,6 +2772,518 @@ const batchAnalysis = (paragraphs: Paragraph[]) => {
 2. Previously analyzed text - loads from cache
 3. Large document - batched appropriately
 4. Performance noticeably improved
+
+---
+
+### Task 8.7: Create suggestions pane (right sidebar)
+
+**Goal**: Implement a simple suggestions pane that shows all suggestions in a scrollable list on the right side of the editor, organized by the 6 main user story categories.
+
+**Implementation**:
+1. Create SuggestionsPane component:
+```typescript
+// src/components/editor/SuggestionsPane.tsx
+export function SuggestionsPane({ suggestions, onAccept, onReject, onSuggestionClick }) {
+  // Group suggestions by user story type
+  const groupedSuggestions = suggestions.reduce((acc, suggestion) => {
+    // Map suggestion types to user story categories
+    const categoryMap = {
+      'tone': 'Tone Adjustment',
+      'persuasive': 'Persuasive Language',
+      'conciseness': 'Conciseness',
+      'headline': 'Headline Optimization',
+      'readability': 'Readability Guidance',
+      'vocabulary': 'Vocabulary Variation',
+      'ab_test': 'A/B Alternatives',
+      'grammar': 'Grammar & Spelling' // Still include grammar as a bonus
+    }
+    
+    const category = categoryMap[suggestion.type] || 'Other'
+    if (!acc[category]) acc[category] = []
+    acc[category].push(suggestion)
+    return acc
+  }, {})
+  
+  return (
+    <div className="w-80 h-full bg-gray-50 border-l flex flex-col">
+      {/* Header */}
+      <div className="p-4 border-b bg-white">
+        <h2 className="text-lg font-semibold">Suggestions</h2>
+        <p className="text-sm text-gray-600 mt-1">
+          {suggestions.length} improvements found
+        </p>
+      </div>
+      
+      {/* Suggestions List */}
+      <div className="flex-1 overflow-y-auto p-4">
+        {suggestions.length === 0 ? (
+          <p className="text-gray-500 text-center py-8">
+            No suggestions yet. Start typing to see improvements.
+          </p>
+        ) : (
+          Object.entries(groupedSuggestions).map(([category, items]) => (
+            <div key={category} className="mb-6">
+              {/* Category Header */}
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                {category} ({items.length})
+              </h3>
+              
+              {/* Suggestions in this category */}
+              <div className="space-y-2">
+                {items.map(suggestion => (
+                  <SuggestionItem
+                    key={suggestion.id}
+                    suggestion={suggestion}
+                    onAccept={() => onAccept(suggestion)}
+                    onReject={() => onReject(suggestion)}
+                    onClick={() => onSuggestionClick(suggestion)}
+                  />
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  )
+}
+```
+
+2. Create SuggestionItem component:
+```typescript
+// src/components/editor/SuggestionItem.tsx
+function SuggestionItem({ suggestion, onAccept, onReject, onClick }) {
+  const [isHovered, setIsHovered] = useState(false)
+  
+  return (
+    <div
+      className="border rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={onClick}
+    >
+      {/* Suggestion Type Badge */}
+      <div className="flex items-center justify-between mb-2">
+        <span className={`text-xs px-2 py-1 rounded-full ${
+          getSuggestionBadgeStyle(suggestion.type)
+        }`}>
+          {getSuggestionLabel(suggestion.type)}
+        </span>
+        <span className="text-xs text-gray-500">
+          {Math.round(suggestion.confidence * 100)}% confidence
+        </span>
+      </div>
+      
+      {/* Original Text */}
+      <div className="mb-2">
+        <span className="text-sm text-gray-600 line-through">
+          {suggestion.originalText}
+        </span>
+      </div>
+      
+      {/* Suggested Text */}
+      <div className="mb-2">
+        <span className="text-sm font-medium text-green-600">
+          {suggestion.suggestionText}
+        </span>
+      </div>
+      
+      {/* Explanation */}
+      <p className="text-xs text-gray-500 mb-3">
+        {suggestion.explanation}
+      </p>
+      
+      {/* Action Buttons */}
+      {isHovered && (
+        <div className="flex gap-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onAccept()
+            }}
+            className="flex-1 px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+          >
+            Accept
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onReject()
+            }}
+            className="flex-1 px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+```
+
+3. Update EditorPage layout:
+```typescript
+// In EditorPage.tsx
+return (
+  <div className="flex h-screen">
+    {/* Main Editor Area */}
+    <div className="flex-1 flex flex-col">
+      {/* Editor Header */}
+      <header className="border-b p-4">
+        {/* ... existing header content ... */}
+      </header>
+      
+      {/* Editor Content */}
+      <div className="flex-1 p-8 overflow-y-auto">
+        <TextEditor document={currentDocument} />
+      </div>
+      
+      {/* Status Bar */}
+      <footer className="border-t p-2">
+        {/* ... existing status bar ... */}
+      </footer>
+    </div>
+    
+    {/* Suggestions Pane */}
+    {suggestions.length > 0 && (
+      <SuggestionsPane
+        suggestions={suggestions}
+        onAccept={handleAcceptSuggestion}
+        onReject={handleRejectSuggestion}
+        onSuggestionClick={handleSuggestionClick}
+      />
+    )}
+  </div>
+)
+```
+
+**Test**:
+1. Type text with multiple types of errors
+2. Verify suggestions pane appears on the right
+3. Test tab filtering - each category shows correct suggestions
+4. Click on a suggestion - editor scrolls to and highlights that text
+5. Hover over suggestion item - action buttons appear
+6. Accept a suggestion - text updates and item disappears
+7. Dismiss a suggestion - item disappears but text unchanged
+8. Verify empty state when no suggestions
+9. Test with many suggestions - scrolling works
+10. Close and reopen pane - state persists
+
+---
+
+
+
+### Task 8.9: Verify document persistence and auto-save
+
+**Goal**: Ensure documents are properly saved to the database, auto-save works reliably, and documents persist across sessions.
+
+**Implementation**:
+1. Complete document store implementation:
+```typescript
+// src/store/documentStore.ts
+interface DocumentState {
+  documents: Document[]
+  currentDocument: Document | null
+  saveStatus: 'saved' | 'saving' | 'error'
+  lastSaved: Date | null
+  
+  loadDocuments: () => Promise<void>
+  createDocument: (title?: string) => Promise<Document>
+  updateDocument: (id: string, updates: Partial<Document>) => Promise<void>
+  deleteDocument: (id: string) => Promise<void>
+  setCurrentDocument: (doc: Document | null) => void
+  autoSave: (content: string) => void
+}
+
+export const useDocumentStore = create<DocumentState>((set, get) => ({
+  documents: [],
+  currentDocument: null,
+  saveStatus: 'saved',
+  lastSaved: null,
+  
+  loadDocuments: async () => {
+    const user = useAuthStore.getState().user
+    if (!user) return
+    
+    const { data, error } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false })
+    
+    if (!error && data) {
+      set({ documents: data })
+    }
+  },
+  
+  createDocument: async (title = 'Untitled Document') => {
+    const user = useAuthStore.getState().user
+    if (!user) throw new Error('Not authenticated')
+    
+    const { data, error } = await supabase
+      .from('documents')
+      .insert({
+        user_id: user.id,
+        title,
+        content: ''
+      })
+      .select()
+      .single()
+    
+    if (error) throw error
+    
+    set(state => ({
+      documents: [data, ...state.documents]
+    }))
+    
+    return data
+  },
+  
+  updateDocument: async (id: string, updates: Partial<Document>) => {
+    set({ saveStatus: 'saving' })
+    
+    try {
+      const { error } = await supabase
+        .from('documents')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+      
+      if (error) throw error
+      
+      set(state => ({
+        documents: state.documents.map(doc =>
+          doc.id === id ? { ...doc, ...updates } : doc
+        ),
+        currentDocument: state.currentDocument?.id === id
+          ? { ...state.currentDocument, ...updates }
+          : state.currentDocument,
+        saveStatus: 'saved',
+        lastSaved: new Date()
+      }))
+    } catch (error) {
+      set({ saveStatus: 'error' })
+      throw error
+    }
+  },
+  
+  // Debounced auto-save
+  autoSave: debounce(async (content: string) => {
+    const { currentDocument } = get()
+    if (!currentDocument) return
+    
+    await get().updateDocument(currentDocument.id, { content })
+  }, 2000)
+}))
+```
+
+2. Add auto-save indicator:
+```typescript
+// In EditorPage status bar
+<div className="flex items-center gap-2">
+  {saveStatus === 'saving' && (
+    <>
+      <LoadingSpinner size="sm" />
+      <span className="text-sm text-gray-600">Saving...</span>
+    </>
+  )}
+  {saveStatus === 'saved' && lastSaved && (
+    <span className="text-sm text-gray-600">
+      Saved {formatRelativeTime(lastSaved)}
+    </span>
+  )}
+  {saveStatus === 'error' && (
+    <span className="text-sm text-red-600">
+      Error saving (retrying...)
+    </span>
+  )}
+</div>
+```
+
+3. Add document recovery:
+```typescript
+// Handle connection issues
+window.addEventListener('online', () => {
+  // Retry any failed saves
+  const { saveStatus, currentDocument } = useDocumentStore.getState()
+  if (saveStatus === 'error' && currentDocument) {
+    useDocumentStore.getState().autoSave(currentDocument.content)
+  }
+})
+```
+
+**Test**:
+1. Create new document - appears in list
+2. Type content - see "Saving..." after 2 seconds
+3. Verify "Saved" appears
+4. Refresh page - content persists
+5. Open in new tab - same content
+6. Make changes in one tab - other tab updates
+7. Go offline (dev tools) - type changes
+8. Go back online - changes save
+9. Check Supabase - document updated
+10. Delete document - removed from list
+
+---
+
+### Task 8.10: Full integration test of core features
+
+**Goal**: Perform comprehensive testing to ensure all core features work together seamlessly before moving to advanced features.
+
+**Implementation**:
+Create test checklist and verify each item:
+
+```typescript
+// Integration test checklist
+const INTEGRATION_TESTS = [
+  {
+    category: "Authentication",
+    tests: [
+      "Login with test user credentials",
+      "Logout and verify redirect",
+      "Session persists on refresh",
+      "Protected routes redirect when logged out"
+    ]
+  },
+  {
+    category: "Document Management",
+    tests: [
+      "Create new document",
+      "Load existing documents",
+      "Switch between documents",
+      "Rename document inline",
+      "Delete document with confirmation",
+      "Auto-save works reliably"
+    ]
+  },
+  {
+    category: "AI Suggestions",
+    tests: [
+      "Type text with errors",
+      "Suggestions appear after 2 seconds",
+      "Different error types show different colors",
+      "Click underlined text shows suggestion card",
+      "Accept suggestion updates text",
+      "Reject suggestion removes highlight",
+      "Suggestions pane shows all suggestions",
+      "Tab filtering in suggestions pane works"
+    ]
+  },
+  {
+    category: "Editor Features",
+    tests: [
+      "Rich text formatting (bold, italic, etc)",
+      "Suggestion marks persist through edits",
+      "Word/character count updates",
+      "Loading states show appropriately",
+      "Error handling for network issues"
+    ]
+  },
+  {
+    category: "Performance",
+    tests: [
+      "No memory leaks with extended use",
+      "Smooth typing with many suggestions",
+      "Fast document switching",
+      "Reasonable API request frequency"
+    ]
+  }
+]
+```
+
+2. Create integration test page:
+```typescript
+// src/pages/IntegrationTestPage.tsx (development only)
+export function IntegrationTestPage() {
+  const [results, setResults] = useState({})
+  
+  return (
+    <div className="p-8 max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Integration Test Checklist</h1>
+      
+      {INTEGRATION_TESTS.map(category => (
+        <div key={category.category} className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">{category.category}</h2>
+          <div className="space-y-2">
+            {category.tests.map(test => (
+              <label key={test} className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  onChange={(e) => {
+                    setResults(prev => ({
+                      ...prev,
+                      [test]: e.target.checked
+                    }))
+                  }}
+                />
+                <span>{test}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      ))}
+      
+      <div className="mt-8 p-4 bg-gray-100 rounded">
+        <h3 className="font-semibold">Test Coverage:</h3>
+        <p>{Object.values(results).filter(Boolean).length} / {
+          INTEGRATION_TESTS.reduce((acc, cat) => acc + cat.tests.length, 0)
+        } tests passed</p>
+      </div>
+    </div>
+  )
+}
+```
+
+**Test**:
+Run through the complete user journey:
+
+1. **Fresh Start Test**:
+   - Clear browser data
+   - Navigate to app
+   - Login with test credentials
+   - Verify redirect to editor
+
+2. **Document Creation Flow**:
+   - Create new document
+   - Type "This are a test sentence with erors"
+   - Wait for suggestions
+   - See red underlines on grammar errors
+
+3. **Suggestion Interaction**:
+   - Click on "are" - see suggestion card
+   - Accept suggestion - verify "is" replaces "are"
+   - Check suggestions pane - see remaining suggestions
+   - Use tab filters - verify correct categorization
+
+4. **Persistence Test**:
+   - Make several edits
+   - Note save status
+   - Refresh page
+   - Verify all changes preserved
+
+5. **Multi-tab Test**:
+   - Open app in second tab
+   - Make edit in first tab
+   - Verify second tab updates
+
+6. **Error Recovery**:
+   - Disconnect network
+   - Make edits
+   - Reconnect
+   - Verify saves complete
+
+7. **Performance Check**:
+   - Type continuously for 1 minute
+   - Verify no lag or freezing
+   - Check browser memory usage
+
+8. **Final Verification**:
+   - All core features accessible
+   - No console errors
+   - Smooth user experience
+   - Ready for additional features
 
 ---
 

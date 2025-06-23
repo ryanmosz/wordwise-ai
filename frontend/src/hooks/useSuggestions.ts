@@ -79,8 +79,18 @@ export function useSuggestions({
   const isDebugMode = typeof window !== 'undefined' && 
     new URLSearchParams(window.location.search).has('debug')
   
-  // Create debounced analyze function
-  const analyzeText = useCallback(
+  // Store refs for stable callback
+  const documentIdRef = useRef(documentId)
+  const userSettingsRef = useRef(userSettings)
+  
+  // Update refs when props change
+  useEffect(() => {
+    documentIdRef.current = documentId
+    userSettingsRef.current = userSettings
+  }, [documentId, userSettings])
+  
+  // Create stable debounced analyze function
+  const analyzeText = useRef(
     debounce(async (text: string) => {
       // Skip if too short
       if (text.length < 10) {
@@ -100,11 +110,11 @@ export function useSuggestions({
       try {
         console.log('[useSuggestions] Starting analysis for text length:', text.length)
         
-        // Use the real AI service
+        // Use the real AI service with current refs
         const result = await aiService.analyzeText({
           text,
-          documentId,
-          userSettings
+          documentId: documentIdRef.current,
+          userSettings: userSettingsRef.current
         })
         
         // Only update if this is still the latest request
@@ -141,9 +151,8 @@ export function useSuggestions({
           setIsLoading(false)
         }
       }
-    }, 2000), // 2 second delay
-    [documentId, userSettings, clearSuggestions, addSuggestions]
-  )
+    }, 2000) // 2 second delay
+  ).current
   
   // Effect to trigger analysis when text changes
   useEffect(() => {
@@ -160,7 +169,7 @@ export function useSuggestions({
       // Cancel any pending API request
       aiService.cancelAnalysis()
     }
-  }, [text, analyzeText, enabled])
+  }, [text, enabled]) // analyzeText is stable, no need in deps
   
   // Accept suggestion handler
   const acceptSuggestion = useCallback(async (suggestionId: string) => {

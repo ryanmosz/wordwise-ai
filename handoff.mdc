@@ -4,3 +4,150 @@ globs:
 alwaysApply: false
 ---
 # Handoff File
+
+## Task 8.3: Add Loading States to Editor - COMPLETED ✅
+
+### Summary
+Successfully added loading indicators to the editor that appear when AI analysis is in progress. The implementation shows "Analyzing..." in the footer status bar during the 2-second debounce period and while the AI processes the text.
+
+### What Was Done
+
+1. **Fixed Hook Stability Issue**
+   - Modified `useSuggestions` hook to use stable references with `useRef`
+   - Prevented repeated cancellation of API requests
+   - Analysis now properly completes after the 2-second debounce
+
+2. **Added Loading Indicator to Footer**
+   - Shows "Analyzing..." with LoadingSpinner in footer status bar
+   - Only appears when `isAnalyzing` is true
+   - Uses blue-600 color to match app theme
+
+3. **Integrated AI Analysis**
+   - Connected `useSuggestions` hook in EditorPage
+   - Hook triggers analysis when document content changes
+   - Successfully receives suggestions from edge function
+
+4. **Verified End-to-End Flow**
+   - Text analysis triggers after 2 seconds of no typing
+   - Loading indicator appears during API call
+   - AI returns suggestions (7 in first test, 5 in second)
+   - Loading indicator disappears when complete
+
+### Key Features Verified
+
+1. **Debounced Analysis** ✅
+   - 2-second delay after user stops typing
+   - Previous requests cancelled if user continues typing
+
+2. **Visual Feedback** ✅
+   - Clear "Analyzing..." indicator in footer
+   - Non-blocking - users can continue typing
+
+3. **AI Integration** ✅
+   - Edge function successfully processes text
+   - Returns grammar, tone, and other suggestions
+   - Suggestions stored in document store
+
+### Results from Testing
+
+From the console logs:
+- Initial analysis: 7 suggestions returned
+- Second analysis: 5 suggestions returned
+- Loading states properly toggle between true/false
+- No errors during analysis
+
+### Next Steps
+- Task 8.3 is complete
+- Ready to proceed with Task 8.4: Implement error handling
+- The AI analysis pipeline is fully functional
+
+### Key Code Locations
+- **Hook Integration**: `frontend/src/pages/EditorPage.tsx` (lines 29-33)
+- **Loading Indicator**: `frontend/src/pages/EditorPage.tsx` (lines 285-291)
+- **Hook Stability Fix**: `frontend/src/hooks/useSuggestions.ts` (useRef implementation)
+
+### Notes
+- The edge function is working perfectly (113 invocations)
+- OpenAI integration is properly configured
+- Suggestions are being parsed and returned correctly
+
+# Handoff Document - Testing Complete for Task 8.3
+
+## Current Status: Ready for Task 8.3.5
+
+### ✅ Completed Testing Summary
+
+#### 1. **AI Service Integration (Task 8.1-8.3)**
+- ✅ Edge function deployed and working (113 successful invocations in Supabase dashboard)
+- ✅ OpenAI API key properly configured
+- ✅ Returns suggestions properly (tested with 7 and 5 suggestions)
+- ✅ Proper response parsing from GPT-4o-mini
+
+#### 2. **Debounced Analysis (Task 8.2)**
+- ✅ 2-second delay working correctly
+- ✅ Previous requests cancelled when typing continues
+- ✅ Fixed hook stability issues using `useRef` instead of `useCallback`
+- ✅ Minimum text length validation (10 characters)
+
+#### 3. **Loading States (Task 8.3)**
+- ✅ "Analyzing..." appears in footer after 2 seconds
+- ✅ Loading indicator disappears when analysis completes
+- ✅ Non-blocking - users can continue typing during analysis
+
+#### 4. **useSuggestions Hook**
+- ✅ Integrates with AI service properly
+- ✅ Manages state through documentStore
+- ✅ Handles accept/reject methods
+- ✅ Debug mode with detailed metrics
+- ✅ Efficient request cancellation
+
+#### 5. **Component Infrastructure**
+- ✅ SuggestionMark TipTap extension created (not integrated)
+- ✅ SuggestionHighlight component created (not integrated)
+- ✅ SuggestionCard component created (not integrated)
+- ✅ Color coding system for 8 suggestion types
+
+### 📝 Test Infrastructure Created
+1. **Static HTML Test Pages** (in `frontend/public/`):
+   - `test-w3m-suggestions.html` - Tests useSuggestions hook
+   - `test-loading-inline.html` - Tests loading states
+   - `test-suggestion-state.html` - Tests state management
+   - `test-accept-reject.html` - Tests accept/reject functionality
+   - `test-debounce.html` - Tests debouncing
+
+2. **React Test Pages** (in `frontend/src/pages/`):
+   - `TestUseSuggestions.tsx` - Hook integration testing
+   - `TestLoadingStates.tsx` - Loading indicator testing
+   - Various other test components
+
+3. **Test Scripts** (in `frontend/scripts/`):
+   - `test-use-suggestions.sh` - W3M automated testing
+   - `test-loading-states.sh` - Loading state verification
+   - `verify-with-w3m.cjs` - Node.js verification script
+
+4. **Test Content Document** (`frontend/public/test-content.txt`):
+   - Contains examples of all 8 error types
+   - Ready for testing when document loading is implemented
+
+### ❌ Not Yet Integrated
+1. **Visual Suggestion Display**:
+   - SuggestionMark not added to TipTap editor
+   - Suggestions not being highlighted/underlined
+   - SuggestionCard not appearing on click/hover
+
+2. **Document Load Analysis**:
+   - No initial analysis when opening a document
+   - Only analyzes new typed text
+
+3. **Editor Integration**:
+   - TextEditor.tsx doesn't use SuggestionMark extension
+   - No mapping of suggestions to text positions
+   - No click/hover handlers for suggestions
+
+### 🎯 Next: Task 8.3.5 - Integrate suggestion highlights into TextEditor
+
+This task will connect all the built components to make suggestions visible in the editor with:
+- Colored underlines based on suggestion type
+- Click/hover to show SuggestionCard
+- Accept/reject functionality that updates the text
+- Proper position tracking as text changes

@@ -74,6 +74,12 @@ class AIService {
       // Handle response
       const data = await response.json() as AnalyzeTextResponse | ErrorResponse
       
+      console.log('[AIService] Response from edge function:', {
+        status: response.status,
+        ok: response.ok,
+        data: data
+      })
+      
       if (!response.ok) {
         // Handle specific error cases
         if (response.status === 429) {

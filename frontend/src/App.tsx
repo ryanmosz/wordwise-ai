@@ -20,6 +20,7 @@ import { useAuthStore } from './store/authStore'
 import { useEffect } from 'react'
 import { supabase } from './services/supabase'
 import { TestDebounce } from './pages/TestDebounce'
+import { TestLoadingStates } from './pages/TestLoadingStates'
 
 function AuthRedirect() {
   const { user, loading, checkUser } = useAuthStore()
@@ -92,6 +93,7 @@ function App() {
         <Route path="/test-accept-reject" element={<TestAcceptReject />} />
         <Route path="/test-ai-service" element={<TestAIService />} />
         <Route path="/test-debounce" element={<TestDebounce />} />
+        <Route path="/test-loading-states" element={<TestLoadingStates />} />
         <Route 
           path="/documents" 
           element={

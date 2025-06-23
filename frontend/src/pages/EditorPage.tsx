@@ -5,6 +5,7 @@ import { useDocumentStore } from '../store/documentStore'
 import { TextEditor } from '../components/editor/TextEditor'
 import { DocumentSelector } from '../components/editor/DocumentSelector'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
+import { useSuggestions } from '../hooks/useSuggestions'
 
 export function EditorPage() {
   // Visual reference: docs/screenshots/editor-layout-v1.png
@@ -25,8 +26,30 @@ export function EditorPage() {
   const [isInitialized, setIsInitialized] = useState(false)
   const [isLoadingDocument, setIsLoadingDocument] = useState(true)
 
+  // Use the suggestions hook with current document content
+  const { suggestions, isLoading: isAnalyzing, error: analysisError } = useSuggestions({
+    text: currentDocument?.content || '',
+    documentId: currentDocument?.id || '',
+    enabled: !!currentDocument && (currentDocument.content?.length || 0) > 0
+  })
+
   // Add console log for debugging
   console.log('EditorPage mounted - Layout verification')
+  console.log('Analysis state:', { 
+    isAnalyzing, 
+    suggestionsCount: suggestions.length,
+    hasDocument: !!currentDocument,
+    contentLength: currentDocument?.content?.length || 0,
+    analysisError: analysisError?.message || 'none'
+  })
+
+  // Log when analysis state changes
+  useEffect(() => {
+    console.log('Analysis state changed:', {
+      isAnalyzing,
+      timestamp: new Date().toISOString()
+    })
+  }, [isAnalyzing])
 
   // Load documents on mount
   useEffect(() => {
@@ -286,9 +309,20 @@ export function EditorPage() {
             <span>Words: {wordCount}</span>
             <span>Characters: {charCount}</span>
             <span>Readability: N/A</span>
+            {isAnalyzing && (
+              <span className="flex items-center text-blue-600">
+                <LoadingSpinner size="sm" />
+                <span className="ml-2">Analyzing...</span>
+              </span>
+            )}
           </div>
         </div>
       </footer>
+
+      {/* Debug info for W3M testing */}
+      <div className="sr-only" data-testid="editor-debug-info">
+        DEBUG: EditorPage isAnalyzing={isAnalyzing ? 'true' : 'false'} suggestionsCount={suggestions.length} hasDocument={currentDocument ? 'true' : 'false'} documentId={currentDocument?.id || 'none'} contentLength={currentDocument?.content?.length || 0}
+      </div>
     </div>
   )
 } 
